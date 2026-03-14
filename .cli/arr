@@ -54,6 +54,13 @@ case "${1:-}" in
         shift
         bash "$CLI_DIR/stop.sh" "$@"
         ;;
+    health|hp)
+        bash "$CLI_DIR/health.sh"
+        ;;
+    backup|bk)
+        shift
+        bash "$CLI_DIR/backup.sh" "$@"
+        ;;
     start)
         shift
         bash "$CLI_DIR/start.sh" "$@"
@@ -96,6 +103,7 @@ case "${1:-}" in
 
         echo -e "  ${local_peach}${local_bold}Monitoring${local_reset}"
         echo -e "  ${local_surface}│${local_reset}"
+        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "health" "Quick API health check (fast!)"
         printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "downloads" "Live download dashboard"
         printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "vpn" "Check VPN tunnel status"
         printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "logs <svc>" "View service logs"
@@ -120,7 +128,7 @@ case "${1:-}" in
         printf "  ${local_surface}└─${local_reset} ${local_overlay}%-42s${local_reset}\n" "gluetun (vpn), flaresolverr (anti-bot)"
         echo ""
 
-        echo -e "  ${local_dim}Aliases: st=status, up=update, doc=doctor, dl=downloads, log=logs${local_reset}"
+        echo -e "  ${local_dim}Aliases: st=status, up=update, doc=doctor, dl=downloads, log=logs, bk=backup, hp=health${local_reset}"
         echo -e "  ${local_dim}Stack location: $ARR_HOME${local_reset}"
         echo ""
         ;;
