@@ -1,0 +1,12 @@
+# Secrets
+.env
+
+# Runtime data (created by services, never tracked)
+config/
+downloads/
+media/
+
+# OS junk
+.DS_Store
+Thumbs.db
+*.swp

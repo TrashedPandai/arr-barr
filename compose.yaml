@@ -1,0 +1,314 @@
+# ==============================================================================
+#  Arr Media Automation Stack
+# ==============================================================================
+#
+#  A complete home media server: automatically search, download, organize,
+#  and stream movies, TV shows, music, books, and audiobooks.
+#
+#  SETUP:
+#    1. Copy .env.example to .env and fill in your values
+#    2. Create the directory tree listed in .env.example
+#    3. Run:  docker compose up -d
+#
+#  ARCHITECTURE:
+#    Prowlarr manages indexers and syncs them to the *arr apps.
+#    Radarr/Sonarr/Lidarr/LazyLibrarian search indexers and send downloads
+#    to Transmission (torrents) or SABnzbd (usenet), which run inside a
+#    VPN tunnel via Gluetun. Jellyfin streams the organized media.
+#    Seerr lets users request new content through a friendly UI.
+#
+# ==============================================================================
+
+services:
+
+  # ============================================================================
+  #  VPN TUNNEL
+  # ============================================================================
+  #  Gluetun creates a WireGuard VPN tunnel. Download clients share its
+  #  network (via network_mode) so all download traffic is routed through
+  #  the VPN. Their web UIs are exposed through Gluetun's ports below.
+  # ============================================================================
+
+  gluetun:  # WireGuard VPN container — all downloads route through this
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_PUBLIC_KEY=${WIREGUARD_PUBLIC_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESS}
+      - VPN_ENDPOINT_IP=${VPN_ENDPOINT_IP}
+      - VPN_ENDPOINT_PORT=${VPN_ENDPOINT_PORT}
+      - FIREWALL_INPUT_PORTS=9091,8080
+      - DNS_ADDRESS=1.1.1.1
+      - TZ=${TZ}
+    ports:
+      - "9091:9091"    # Transmission web UI
+      - "8080:8080"    # SABnzbd web UI
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:9999"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ============================================================================
+  #  DOWNLOAD CLIENTS
+  # ============================================================================
+  #  These run INSIDE the VPN tunnel (network_mode: service:gluetun).
+  #  They have no ports of their own — access their UIs via Gluetun's
+  #  mapped ports above (9091 for Transmission, 8080 for SABnzbd).
+  # ============================================================================
+
+  transmission:  # Torrent client — downloads torrents sent by the arr apps
+    image: lscr.io/linuxserver/transmission:latest
+    container_name: transmission
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/transmission:/config
+      # Mounted at /data for hardlink support — set download-dir to /data/downloads/torrents
+      - ${DATA_ROOT}:/data
+    restart: unless-stopped
+
+  sabnzbd:  # Usenet client — downloads NZBs sent by the arr apps
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/sabnzbd:/config
+      - ${DATA_ROOT}:/data
+    restart: unless-stopped
+
+  # ============================================================================
+  #  INDEXER MANAGEMENT
+  # ============================================================================
+
+  prowlarr:  # Manages all your indexers, syncs them to the arr apps
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    # Hardcoded DNS bypasses any local DNS (Pi-hole, AdGuard, etc.)
+    # Change to your preferred DNS servers if needed.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/prowlarr:/config
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+
+  flaresolverr:  # Bypasses Cloudflare protection on some indexer sites
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=${TZ}
+    ports:
+      - "8191:8191"
+    restart: unless-stopped
+
+  # ============================================================================
+  #  MEDIA MANAGEMENT (The *Arr Apps)
+  # ============================================================================
+  #  These search indexers, send downloads to your clients, and organize
+  #  the finished files into your media library with proper naming.
+  # ============================================================================
+
+  radarr:  # Movies — search, download, and organize your movie collection
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/radarr:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - "7878:7878"
+    restart: unless-stopped
+
+  sonarr:  # TV Shows — search, download, and organize TV series
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/sonarr:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - "8989:8989"
+    restart: unless-stopped
+
+  lidarr:  # Music — search, download, and organize your music library
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/lidarr:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - "8686:8686"
+    restart: unless-stopped
+
+  bazarr:  # Subtitles — automatically finds and downloads subtitles for Radarr/Sonarr
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/bazarr:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - "6767:6767"
+    restart: unless-stopped
+
+  # ============================================================================
+  #  BOOKS & AUDIOBOOKS
+  # ============================================================================
+
+  lazylibrarian:  # Book search & download management (like Radarr but for books)
+    profiles: ["lazylibrarian", "kavita", "audiobookshelf"]
+    image: lscr.io/linuxserver/lazylibrarian:latest
+    container_name: lazylibrarian
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - DOCKER_MODS=linuxserver/mods:universal-calibre|linuxserver/mods:lazylibrarian-ffmpeg
+    volumes:
+      - ${DATA_ROOT}/config/lazylibrarian:/config
+      - ${DATA_ROOT}:/data
+    ports:
+      - "5299:5299"
+    restart: unless-stopped
+
+  kavita:  # Ebook reader — read your books in the browser (self-hosted Kindle)
+    profiles: ["kavita"]
+    image: jvmilazz0/kavita:latest
+    container_name: kavita
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/kavita:/kavita/config
+      - ${DATA_ROOT}/media/books:/books:ro
+    ports:
+      - "5004:5000"
+    restart: unless-stopped
+
+  audiobookshelf:  # Audiobook & podcast server with progress tracking
+    profiles: ["audiobookshelf"]
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/audiobookshelf:/config
+      - ${DATA_ROOT}/config/audiobookshelf-meta:/metadata
+      - ${DATA_ROOT}/media/audiobooks:/audiobooks:ro
+    ports:
+      - "13378:80"
+    restart: unless-stopped
+
+  # ============================================================================
+  #  MEDIA SERVER & REQUESTS
+  # ============================================================================
+
+  jellyfin:  # Stream your media to any device (self-hosted Netflix)
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    network_mode: host
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/jellyfin:/config
+      - ${DATA_ROOT}/config/jellyfin-cache:/cache
+      - ${DATA_ROOT}/media/movies:/movies:ro
+      - ${DATA_ROOT}/media/tv:/tv:ro
+    # GPU hardware transcoding (optional) — uncomment if you have a GPU:
+    #   1. Check your devices: ls -la /dev/dri/
+    #   2. Set GPU_RENDER_DEVICE and GPU_CARD_DEVICE in .env
+    #   3. Uncomment the two lines below
+    # devices:
+    #   - ${GPU_RENDER_DEVICE}:${GPU_RENDER_DEVICE}
+    #   - ${GPU_CARD_DEVICE}:${GPU_CARD_DEVICE}
+    restart: unless-stopped
+
+  seerr:  # Let users request movies & shows (integrates with Radarr + Sonarr)
+    image: fallenbagel/jellyseerr:latest
+    container_name: seerr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=${TZ}
+    volumes:
+      - ${DATA_ROOT}/config/seerr:/app/config
+    ports:
+      - "5055:5055"
+    restart: unless-stopped
+
+  # ============================================================================
+  #  GAMING
+  # ============================================================================
+
+  questarr:  # Game library management and tracking
+    image: ghcr.io/doezer/questarr:latest
+    container_name: questarr
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - SQLITE_DB_PATH=/app/data/sqlite.db
+    volumes:
+      - ${DATA_ROOT}/config/questarr:/app/data
+    ports:
+      - "5002:5000"
+    restart: unless-stopped
