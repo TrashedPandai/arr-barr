@@ -5,11 +5,13 @@
 ### Your own Netflix, Spotify, Kindle, and Audible.
 ### Self-hosted. Automated. No subscriptions.
 
-[Get Started](#-get-started) · [How It Works](#-how-it-works) · [Website](https://arrbarr.com) · [Docs](https://arrbarr.com/docs)
+[🌐 arrbarr.com](https://arrbarr.com) · [Get Started](#-get-started) · [How It Works](#-how-it-works) · [Docs](https://arrbarr.com/docs)
 
 ---
 
 **One command sets up 15 services.** Request a movie, and minutes later it's streaming on your TV — downloaded through an encrypted VPN, organized with perfect names and artwork, subtitles included. Repeat for TV shows, music, books, audiobooks, and games.
+
+**New here?** Visit **[arrbarr.com](https://arrbarr.com)** for visual guides, an interactive architecture tour, and a step-by-step walkthrough designed for non-technical users.
 
 </div>
 
@@ -39,6 +41,8 @@
 Plus: content never disappears, no region locks, share with friends and family, and you own your library forever.
 
 ## 🚀 Get Started
+
+> **First time?** Read the full walkthrough at **[arrbarr.com/guide](https://arrbarr.com/guide)** — it covers prerequisites, VPN setup, and your first request with screenshots and explanations.
 
 ```bash
 # Clone
@@ -73,8 +77,8 @@ arr status        # Quick pulse — are all 15 services alive?
 arr downloads     # Live download monitor with progress bars
 arr vpn           # VPN tunnel status and public IP
 arr request       # Search & add content from the terminal
-arr start         # Launch the stack
-arr stop          # Shut it down (with visual sequence)
+arr start         # Launch the stack (animated sequence)
+arr stop          # Shut it down (visual shutdown sequence)
 arr update        # Pull latest code + images
 arr backup        # Snapshot all configs
 arr doctor        # Diagnose and auto-fix common issues
@@ -113,6 +117,8 @@ The CLI features animated launch/shutdown sequences, color-coded service groups,
 - **Single mount** (`/data`) — downloads and media on the same filesystem so hardlinks work. A 50GB movie uses 50GB total, not 100GB.
 - **Split networking** — downloads go through VPN, streaming stays fast on the local network.
 - **Quality scoring** — 48 custom formats in Radarr, 44 in Sonarr (from TRaSH Guides). Every release is scored and ranked automatically.
+
+> Deep dive into the architecture at **[arrbarr.com/docs](https://arrbarr.com/docs)** — interactive network topology, hardlink diagrams, quality pipeline, and more.
 
 ## 📦 The 15 Services
 
@@ -179,6 +185,8 @@ The CLI features animated launch/shutdown sequences, color-coded service groups,
 
 </details>
 
+> Meet every service visually at **[arrbarr.com/crew](https://arrbarr.com/crew)**
+
 ## 🔄 Staying Updated
 
 ```bash
@@ -222,11 +230,14 @@ arr vpn             # Verify VPN is connected
 
 ## 📚 Learn More
 
-- **[arrbarr.com](https://arrbarr.com)** — The full website with visual guides
-- **[The Guide](https://arrbarr.com/guide)** — Step-by-step setup walkthrough
-- **[The Crew](https://arrbarr.com/crew)** — Visual roster of all 15 services
-- **[Docs](https://arrbarr.com/docs)** — Technical reference, CLI guide, quality scoring
-- **[learn/](./learn/)** — In-repo documentation with architecture diagrams
+| Resource | What's there |
+|---|---|
+| **[arrbarr.com](https://arrbarr.com)** | Visual homepage, animated terminal demo |
+| **[The Guide](https://arrbarr.com/guide)** | Step-by-step setup for non-technical users |
+| **[The Crew](https://arrbarr.com/crew)** | Visual roster of all 15 services |
+| **[Costs](https://arrbarr.com/costs)** | Full cost breakdown vs streaming |
+| **[Docs](https://arrbarr.com/docs)** | Technical reference, quality scoring, CLI guide |
+| **[learn/](./learn/)** | In-repo architecture docs with Mermaid diagrams |
 
 ---
 
