@@ -26,20 +26,6 @@
 | 🔒 | **VPN Protection** | Every download goes through an encrypted WireGuard tunnel. Kill switch blocks all traffic if the VPN drops. Your ISP sees nothing. |
 | 🤖 | **Fully Automated** | Quality scoring picks the best release from dozens of options. Upgrades happen automatically when something better appears. Zero manual work. |
 
-## 💰 vs. Streaming Subscriptions
-
-| Streaming Services | arr-barr |
-|---|---|
-| Netflix $16/mo | VPN ~$5/mo |
-| Hulu $18/mo | Usenet ~$10/mo |
-| Disney+ $14/mo | Indexers ~$2/mo |
-| HBO Max $17/mo | |
-| Spotify $12/mo | |
-| Audible $15/mo | |
-| **~$92/mo** | **~$17/mo** |
-
-Plus: content never disappears, no region locks, share with friends and family, and you own your library forever.
-
 ## 🚀 Get Started
 
 > **First time?** Read the full walkthrough at **[arrbarr.com/guide](https://arrbarr.com/guide)** — it covers prerequisites, VPN setup, and your first request with screenshots and explanations.
