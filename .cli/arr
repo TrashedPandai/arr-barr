@@ -31,12 +31,13 @@ show_interactive_menu() {
 
     local choice
     choice=$(gum choose --header "  What would you like to do?" \
-        "dashboard  — Full system dashboard" \
         "status     — Is everything running?" \
         "start      — Boot up the stack" \
         "stop       — Shut it all down" \
         "restart    — Restart containers" \
         "update     — Pull latest updates" \
+        "request    — Search & add content" \
+        "health     — Quick API health check" \
         "downloads  — Live download dashboard" \
         "vpn        — Check VPN tunnel" \
         "logs       — View service logs" \
@@ -92,9 +93,20 @@ show_help() {
     printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "doctor" "Check for problems and auto-fix"
     echo ""
 
+    local_flamingo='\033[38;2;242;205;205m'
+    echo -e "  ${local_flamingo}${local_bold}Requests${local_reset}"
+    echo -e "  ${local_surface}|${local_reset}"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "request" "Interactive content search & add"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req movie" "Search & add a movie"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req tv" "Search & add a TV show"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req music" "Search & add an artist"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req book" "Search & add a book"
+    printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req game" "Search & add a game"
+    echo ""
+
     echo -e "  ${local_peach}${local_bold}Monitoring${local_reset}"
     echo -e "  ${local_surface}|${local_reset}"
-    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "dashboard" "Full system dashboard (the good one)"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "health" "Quick API health check (fast!)"
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "downloads" "Live download dashboard"
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "vpn" "Check VPN tunnel status"
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "logs <svc>" "View service logs"
@@ -119,7 +131,7 @@ show_help() {
     printf "  ${local_surface}└─${local_reset} ${local_overlay}%-42s${local_reset}\n" "gluetun (vpn), flaresolverr (anti-bot)"
     echo ""
 
-    echo -e "  ${local_dim}Aliases: db=dashboard, st=stat=status, up=update, doc=doctor, dl=downloads, log=logs, bk=backup, hp=health${local_reset}"
+    echo -e "  ${local_dim}Aliases: st=status, up=update, doc=doctor, dl=downloads, log=logs, bk=backup, hp=health${local_reset}"
     echo -e "  ${local_dim}Stack location: $ARR_HOME${local_reset}"
     echo ""
 }
@@ -127,14 +139,10 @@ show_help() {
 # ── Command Dispatch ──────────────────────────────────────────────────────────
 
 case "${1:-}" in
-    dashboard|db)
-        shift
-        bash "$CLI_DIR/dashboard.sh" "$@"
-        ;;
     setup)
         bash "$CLI_DIR/setup.sh"
         ;;
-    status|st|stat)
+    status|st)
         bash "$CLI_DIR/status.sh"
         ;;
     update|up)
@@ -161,6 +169,10 @@ case "${1:-}" in
     stop)
         shift
         bash "$CLI_DIR/stop.sh" "$@"
+        ;;
+    request|req)
+        shift
+        bash "$CLI_DIR/request.sh" "$@"
         ;;
     health|hp)
         bash "$CLI_DIR/health.sh"

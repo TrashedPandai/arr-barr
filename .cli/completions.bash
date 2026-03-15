@@ -15,8 +15,8 @@ _arr_complete() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     # Top-level commands
-    local commands="setup status start stop restart update doctor dashboard downloads vpn logs backup health help"
-    local aliases="st up doc db dl log bk hp"
+    local commands="setup status start stop restart update doctor downloads vpn logs backup health request help"
+    local aliases="st up doc dl log bk hp req"
 
     # Service names
     local services="gluetun transmission sabnzbd prowlarr flaresolverr radarr sonarr lidarr bazarr jellyfin seerr lazylibrarian kavita audiobookshelf questarr"
@@ -62,11 +62,17 @@ _arr_complete() {
             fi
             return
             ;;
-        dashboard|db|health|hp)
-            # These take no arguments
+        request|req)
+            if [ "$COMP_CWORD" -eq 2 ]; then
+                COMPREPLY=( $(compgen -W "movie tv music book audiobook author game" -- "$cur") )
+            fi
             return
             ;;
-        status|st|stat|setup|update|up|doctor|doc|vpn|help)
+        health|hp)
+            # health takes no arguments
+            return
+            ;;
+        status|st|setup|update|up|doctor|doc|vpn|help)
             # These commands take no arguments
             return
             ;;
