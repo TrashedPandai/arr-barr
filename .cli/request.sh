@@ -38,11 +38,13 @@ _api_get() {
     if [ -n "$api_key" ]; then
         response=$(curl -s --max-time 15 -w "\n%{http_code}" -H "X-Api-Key: $api_key" "$url" 2>/dev/null) || {
             msg_error "Could not reach service."
+            msg_dim "  This feature is still under construction. Try again later or use the web UI."
             return 1
         }
     else
         response=$(curl -s --max-time 15 -w "\n%{http_code}" "$url" 2>/dev/null) || {
             msg_error "Could not reach service."
+            msg_dim "  This feature is still under construction. Try again later or use the web UI."
             return 1
         }
     fi
@@ -50,6 +52,7 @@ _api_get() {
     response=$(echo "$response" | sed '$d')
     if [ "$http_code" != "200" ] && [ "$http_code" != "302" ]; then
         msg_error "API returned HTTP ${http_code}"
+        msg_dim "  This feature is still under construction. Try again later or use the web UI."
         return 1
     fi
     echo "$response"
@@ -62,6 +65,7 @@ _api_post() {
         -X POST -H "Content-Type: application/json" -H "X-Api-Key: $api_key" \
         -d "$body" "$url" 2>/dev/null) || {
         msg_error "Could not reach service."
+        msg_dim "  This feature is still under construction. Try again later or use the web UI."
         return 1
     }
     http_code=$(echo "$response" | tail -1)
@@ -76,6 +80,7 @@ _api_post() {
         echo "$response" | jq -r '.[] | .errorMessage // empty' 2>/dev/null | while read -r err; do
             msg_dim "  $err"
         done
+        msg_dim "  This feature is still under construction. Try again later or use the web UI."
         return 1
     fi
     echo "$response"
@@ -287,20 +292,14 @@ request_movie() {
 
     # Show details and confirm
     echo ""
-    if $HAS_GUM; then
-        printf "  Title:    %s\n  Year:     %s\n  Runtime:  %s min\n  Genres:   %s\n  %s" \
-            "$title" "$year" "$runtime" "$genres" "$overview" | gum style \
-            --border rounded \
-            --border-foreground "#89b4fa" \
-            --foreground "#cdd6f4" \
-            --padding "0 2" \
-            --margin "0 2"
-    else
+    echo ""
+    kv_line "  Title" "$title"
+    kv_line "  Year" "$year"
+    kv_line "  Runtime" "${runtime} min"
+    kv_line "  Genres" "$genres"
+    if [ -n "$overview" ]; then
         echo ""
-        kv_line "  Title" "$title"
-        kv_line "  Year" "$year"
-        kv_line "  Runtime" "${runtime} min"
-        kv_line "  Genres" "$genres"
+        printf "    ${C_OVERLAY0}%s${S_RESET}\n" "$overview"
     fi
 
     echo ""
@@ -388,20 +387,14 @@ request_tv() {
     fi
 
     echo ""
-    if $HAS_GUM; then
-        printf "  Title:    %s\n  Year:     %s\n  Network:  %s\n  Seasons:  %s\n  %s" \
-            "$title" "$year" "$network" "$seasons" "$overview" | gum style \
-            --border rounded \
-            --border-foreground "#89b4fa" \
-            --foreground "#cdd6f4" \
-            --padding "0 2" \
-            --margin "0 2"
-    else
+    echo ""
+    kv_line "  Title" "$title"
+    kv_line "  Year" "$year"
+    kv_line "  Network" "$network"
+    kv_line "  Seasons" "$seasons"
+    if [ -n "$overview" ]; then
         echo ""
-        kv_line "  Title" "$title"
-        kv_line "  Year" "$year"
-        kv_line "  Network" "$network"
-        kv_line "  Seasons" "$seasons"
+        printf "    ${C_OVERLAY0}%s${S_RESET}\n" "$overview"
     fi
 
     echo ""
@@ -489,19 +482,13 @@ request_music() {
     fi
 
     echo ""
-    if $HAS_GUM; then
-        printf "  Artist:   %s\n  Type:     %s\n  Genres:   %s\n  %s" \
-            "$name" "$artist_type" "$genres" "$overview" | gum style \
-            --border rounded \
-            --border-foreground "#89b4fa" \
-            --foreground "#cdd6f4" \
-            --padding "0 2" \
-            --margin "0 2"
-    else
+    echo ""
+    kv_line "  Artist" "$name"
+    kv_line "  Type" "$artist_type"
+    kv_line "  Genres" "$genres"
+    if [ -n "$overview" ]; then
         echo ""
-        kv_line "  Artist" "$name"
-        kv_line "  Type" "$artist_type"
-        kv_line "  Genres" "$genres"
+        printf "    ${C_OVERLAY0}%s${S_RESET}\n" "$overview"
     fi
 
     echo ""
@@ -558,6 +545,7 @@ request_book() {
         local err_msg
         err_msg=$(echo "$json" | jq -r '.Error.Message // "Unknown error"' 2>/dev/null)
         msg_error "LazyLibrarian API error: $err_msg"
+        msg_dim "  This feature is still under construction. Try again later or use the web UI."
         exit 1
     fi
 
@@ -583,16 +571,7 @@ request_book() {
 
     local display="${choice#*|}"
     echo ""
-    if $HAS_GUM; then
-        echo "  $display" | gum style \
-            --border rounded \
-            --border-foreground "#89b4fa" \
-            --foreground "#cdd6f4" \
-            --padding "0 2" \
-            --margin "0 2"
-    else
-        echo -e "  ${C_TEXT}${display}${S_RESET}"
-    fi
+    echo -e "  ${C_TEXT}${display}${S_RESET}"
 
     echo ""
     if ! gum_confirm "Add this book to LazyLibrarian?"; then
@@ -645,6 +624,7 @@ request_author() {
         local err_msg
         err_msg=$(echo "$json" | jq -r '.Error.Message // "Unknown error"' 2>/dev/null)
         msg_error "LazyLibrarian API error: $err_msg"
+        msg_dim "  This feature is still under construction. Try again later or use the web UI."
         exit 1
     fi
 
@@ -705,6 +685,7 @@ request_game() {
         -H "Authorization: Bearer $token" \
         "http://localhost:5002/api/games/search?q=$(printf '%s' "$search_term" | jq -sRr @uri)" 2>/dev/null) || {
         msg_error "Could not reach QuestArr."
+        msg_dim "  This feature is still under construction. Try again later or use the web UI."
         exit 1
     }
 
@@ -750,6 +731,7 @@ request_game() {
         -d "{\"igdbId\": $game_id}" \
         "http://localhost:5002/api/games" 2>/dev/null) || {
         msg_error "Could not add game."
+        msg_dim "  This feature is still under construction. Try again later or use the web UI."
         exit 1
     }
 
