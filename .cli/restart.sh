@@ -15,18 +15,14 @@ case "$SERVICE" in
     "")
         if $HAS_GUM; then
             # Interactive group menu
-            choice=$(gum choose --header "  What to restart?" \
-                "Never mind" \
+            choice=$(gum choose --header "  What to restart?" --height 8 \
+                "Restart all containers" \
                 "VPN + Downloads" \
                 "Downloads only" \
-                "Pick a service..." \
-                "Restart ALL containers") || { msg_dim "Cancelled."; echo ""; exit 0; }
+                "Pick a service...") || { msg_dim "Cancelled."; echo ""; exit 0; }
 
             case "$choice" in
-                "Never mind")
-                    msg_dim "Cancelled."; echo ""; exit 0
-                    ;;
-                "Restart ALL containers")
+                "Restart all containers")
                     if ! gum_confirm "Restart all containers?"; then
                         msg_dim "Cancelled."; echo ""; exit 0
                     fi
@@ -47,10 +43,35 @@ case "$SERVICE" in
                     gum_spin "Restarting download clients..." compose_cmd restart transmission sabnzbd
                     ;;
                 "Pick a service..."*)
-                    SERVICE=$(gum_choose_service "Restart which service?") || { msg_dim "Cancelled."; echo ""; exit 0; }
-                    [ -z "$SERVICE" ] && { msg_dim "Cancelled."; echo ""; exit 0; }
-                    echo ""
-                    gum_spin "Restarting ${SERVICE}..." compose_cmd restart "$SERVICE"
+                    # Build list with bookends, fully rendered
+                    running=$($DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | sort || true)
+                    svc_count=$(echo "$running" | grep -c . || echo 0)
+                    menu_height=$((svc_count + 4))
+
+                    choices="Never mind"
+                    while IFS= read -r name; do
+                        [ -n "$name" ] && choices+=$'\n'"$name"
+                    done <<< "$running"
+                    choices+=$'\n'"Restart ALL containers"
+
+                    SERVICE=$(echo "$choices" | gum choose --header "  Restart which service?" --height "$menu_height") || { msg_dim "Cancelled."; echo ""; exit 0; }
+
+                    case "$SERVICE" in
+                        "Never mind")
+                            msg_dim "Cancelled."; echo ""; exit 0
+                            ;;
+                        "Restart ALL containers")
+                            if ! gum_confirm "Restart all containers?"; then
+                                msg_dim "Cancelled."; echo ""; exit 0
+                            fi
+                            echo ""
+                            gum_spin "Restarting all containers..." compose_cmd restart
+                            ;;
+                        *)
+                            echo ""
+                            gum_spin "Restarting ${SERVICE}..." compose_cmd restart "$SERVICE"
+                            ;;
+                    esac
                     ;;
             esac
         else

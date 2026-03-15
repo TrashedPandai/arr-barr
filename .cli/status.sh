@@ -11,7 +11,8 @@ require_curl
 #  arr status — quick pulse check (merged health + container states)
 # ══════════════════════════════════════════════════════════════════════════════
 
-section_header "STATUS" "$C_SAPPHIRE"
+show_logo_static
+show_header "Arr Media Stack  —  Status"
 echo ""
 
 # ── Profiles ──────────────────────────────────────────────────────────────────
@@ -155,7 +156,9 @@ for gid in "${GROUP_ORDER[@]}"; do
     done
     $has_svc || continue
 
-    printf "  ${GROUP_COLORS[$gid]}${S_DIM}▸ ${GROUP_LABELS[$gid]}${S_RESET}\n"
+    group_healthy=0
+    group_total=0
+    group_lines=""
 
     for svc in ${GROUP_MEMBERS[$gid]}; do
         # Skip inactive profile services
@@ -169,6 +172,7 @@ for gid in "${GROUP_ORDER[@]}"; do
         esac
 
         total_checked=$((total_checked + 1))
+        group_total=$((group_total + 1))
         local_status="${HC_STATUS[$svc]:-down}"
         local_ms="${HC_MS[$svc]:-0}"
         local_ctr="${CTR_STATE[$svc]:-not found}"
@@ -180,25 +184,39 @@ for gid in "${GROUP_ORDER[@]}"; do
             word="${C_RED}down${S_RESET}"
             ms_str=""
             down_names+=("$svc")
+            : # counted below
         elif [ "$local_status" = "healthy" ]; then
             dot="${C_GREEN}●${S_RESET}"
             word="${C_GREEN}healthy${S_RESET}"
             ms_str="${C_OVERLAY0}${local_ms}ms${S_RESET}"
             healthy_count=$((healthy_count + 1))
+            group_healthy=$((group_healthy + 1))
         elif [ "$local_status" = "slow" ]; then
             dot="${C_YELLOW}●${S_RESET}"
             word="${C_YELLOW}slow${S_RESET}"
             ms_str="${C_YELLOW}${local_ms}ms${S_RESET}"
             healthy_count=$((healthy_count + 1))
+            group_healthy=$((group_healthy + 1))
         else
             dot="${C_RED}●${S_RESET}"
             word="${C_RED}unreachable${S_RESET}"
             ms_str=""
             down_names+=("$svc")
+            : # counted below
         fi
 
-        printf "    %b  ${C_TEXT}%-16s${S_RESET}  %b  %b\n" "$dot" "$svc" "$word" "$ms_str"
+        group_lines+="$(printf "    %b  ${C_TEXT}%-16s${S_RESET}  %b  %b" "$dot" "$svc" "$word" "$ms_str")"$'\n'
     done
+
+    # Render group header: green+check if all healthy, yellow if mixed, red if all down
+    if [ "$group_healthy" -eq "$group_total" ] && [ "$group_total" -gt 0 ]; then
+        printf "  ${GROUP_COLORS[$gid]}${S_BOLD}▸ ${GROUP_LABELS[$gid]} ✓${S_RESET}\n"
+    elif [ "$group_healthy" -eq 0 ]; then
+        printf "  ${C_RED}${S_BOLD}▸ ${GROUP_LABELS[$gid]}${S_RESET}\n"
+    else
+        printf "  ${C_YELLOW}${S_BOLD}▸ ${GROUP_LABELS[$gid]}${S_RESET}\n"
+    fi
+    printf "%s" "$group_lines"
     echo ""
 done
 

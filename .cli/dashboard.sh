@@ -534,16 +534,56 @@ done
 # ── Render Service Groups ────────────────────────────────────────────────────
 
 render_group_header() {
-    local label="$1" color="$2"
+    local label="$1" color="$2" state="${3:-neutral}"
     local dashes=""
     local label_len=${#label}
-    local dash_count=$(( TERM_W - label_len - 8 ))
+    local extra=0
+    [ "$state" = "healthy" ] && extra=2
+    local dash_count=$(( TERM_W - label_len - 8 - extra ))
     (( dash_count < 6 )) && dash_count=6
     local i
     for (( i=0; i<dash_count; i+=3 )); do
         dashes+="── "
     done
-    printf "  ${color}${S_BOLD}▸ %s${S_RESET}  ${C_SURFACE1}%s${S_RESET}\n" "$label" "$dashes"
+    case "$state" in
+        healthy) printf "  ${color}${S_BOLD}▸ %s ✓${S_RESET}  ${C_SURFACE1}%s${S_RESET}\n" "$label" "$dashes" ;;
+        mixed)   printf "  ${C_YELLOW}${S_BOLD}▸ %s${S_RESET}  ${C_SURFACE1}%s${S_RESET}\n" "$label" "$dashes" ;;
+        down)    printf "  ${C_RED}${S_BOLD}▸ %s${S_RESET}  ${C_SURFACE1}%s${S_RESET}\n" "$label" "$dashes" ;;
+        *)       printf "  ${color}${S_BOLD}▸ %s${S_RESET}  ${C_SURFACE1}%s${S_RESET}\n" "$label" "$dashes" ;;
+    esac
+}
+
+# Compute group health state: "healthy" | "mixed" | "down"
+# Usage: compute_group_state "svc1 svc2 svc3"
+compute_group_state() {
+    local members="$1"
+    local g_total=0 g_healthy=0
+    for svc in $members; do
+        # Skip inactive profile services
+        case "$svc" in
+            lazylibrarian|kavita|audiobookshelf)
+                profile_active "$svc" || continue
+                ;;
+            questarr)
+                [ "${CTR_STATE[$svc]:-}" = "running" ] || continue
+                ;;
+        esac
+        g_total=$((g_total + 1))
+        local ctr="${CTR_STATE[$svc]:-not found}"
+        local hc="${HC_STATUS[$svc]:-down}"
+        if [ "$ctr" = "running" ] && { [ "$hc" = "healthy" ] || [ "$hc" = "slow" ]; }; then
+            g_healthy=$((g_healthy + 1))
+        fi
+    done
+    if [ "$g_total" -eq 0 ]; then
+        echo "neutral"
+    elif [ "$g_healthy" -eq "$g_total" ]; then
+        echo "healthy"
+    elif [ "$g_healthy" -eq 0 ]; then
+        echo "down"
+    else
+        echo "mixed"
+    fi
 }
 
 render_service_row() {
@@ -600,7 +640,8 @@ render_context_line() {
 
 # ── GROUP: NETWORK & DOWNLOADS ───────────────────────────────────────────────
 
-render_group_header "${GROUP_LABELS[network]}" "${GROUP_COLORS[network]}"
+_state=$(compute_group_state "${GROUP_MEMBERS[network]}")
+render_group_header "${GROUP_LABELS[network]}" "${GROUP_COLORS[network]}" "$_state"
 for svc in ${GROUP_MEMBERS[network]}; do
     render_service_row "$svc"
 done
@@ -622,7 +663,8 @@ sleep 0.05
 
 # ── GROUP: INDEXERS ──────────────────────────────────────────────────────────
 
-render_group_header "${GROUP_LABELS[indexers]}" "${GROUP_COLORS[indexers]}"
+_state=$(compute_group_state "${GROUP_MEMBERS[indexers]}")
+render_group_header "${GROUP_LABELS[indexers]}" "${GROUP_COLORS[indexers]}" "$_state"
 for svc in ${GROUP_MEMBERS[indexers]}; do
     render_service_row "$svc"
 done
@@ -632,7 +674,8 @@ sleep 0.05
 
 # ── GROUP: MEDIA MANAGERS ────────────────────────────────────────────────────
 
-render_group_header "${GROUP_LABELS[media]}" "${GROUP_COLORS[media]}"
+_state=$(compute_group_state "${GROUP_MEMBERS[media]}")
+render_group_header "${GROUP_LABELS[media]}" "${GROUP_COLORS[media]}" "$_state"
 for svc in ${GROUP_MEMBERS[media]}; do
     render_service_row "$svc"
 done
@@ -657,7 +700,8 @@ sleep 0.05
 
 # ── GROUP: STREAMING ─────────────────────────────────────────────────────────
 
-render_group_header "${GROUP_LABELS[streaming]}" "${GROUP_COLORS[streaming]}"
+_state=$(compute_group_state "${GROUP_MEMBERS[streaming]}")
+render_group_header "${GROUP_LABELS[streaming]}" "${GROUP_COLORS[streaming]}" "$_state"
 for svc in ${GROUP_MEMBERS[streaming]}; do
     render_service_row "$svc"
 done
@@ -681,7 +725,8 @@ for svc in ${GROUP_MEMBERS[books]}; do
 done
 
 if $books_has_any; then
-    render_group_header "${GROUP_LABELS[books]}" "${GROUP_COLORS[books]}"
+    _state=$(compute_group_state "${GROUP_MEMBERS[books]}")
+    render_group_header "${GROUP_LABELS[books]}" "${GROUP_COLORS[books]}" "$_state"
     for svc in ${GROUP_MEMBERS[books]}; do
         profile_active "$svc" && render_service_row "$svc"
     done
@@ -692,7 +737,8 @@ fi
 # ── GROUP: GAMING (if running) ───────────────────────────────────────────────
 
 if [ "${CTR_STATE[questarr]:-}" = "running" ]; then
-    render_group_header "${GROUP_LABELS[gaming]}" "${GROUP_COLORS[gaming]}"
+    _state=$(compute_group_state "${GROUP_MEMBERS[gaming]}")
+    render_group_header "${GROUP_LABELS[gaming]}" "${GROUP_COLORS[gaming]}" "$_state"
     for svc in ${GROUP_MEMBERS[gaming]}; do
         render_service_row "$svc"
     done
@@ -702,7 +748,7 @@ fi
 
 # ── ACTIVITY PANEL ───────────────────────────────────────────────────────────
 
-render_group_header "ACTIVITY" "$C_PEACH"
+render_group_header "ACTIVITY" "$C_PEACH" "neutral"
 
 has_activity=false
 
