@@ -13,12 +13,21 @@ if [ -z "$SERVICE" ]; then
     show_header "Arr Media Stack  —  Stop"
 
     if $HAS_GUM; then
-        choice=$(gum choose --header "  What to stop?" \
-            "Stop all containers" \
-            "Stop a single service") || { msg_dim "Cancelled."; echo ""; exit 0; }
+        # Build service list with bookends
+        running=$($DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | sort || true)
+        choices="Never mind"$'\n'
+        while IFS= read -r name; do
+            [ -n "$name" ] && choices+="$name"$'\n'
+        done <<< "$running"
+        choices+="Stop ALL containers"
 
-        case "$choice" in
-            "Stop all containers")
+        SERVICE=$(echo "$choices" | gum choose --header "  Stop which service?") || { msg_dim "Cancelled."; echo ""; exit 0; }
+
+        case "$SERVICE" in
+            "Never mind")
+                msg_dim "Cancelled."; echo ""; exit 0
+                ;;
+            "Stop ALL containers")
                 if ! gum_confirm "Stop all containers?"; then
                     msg_dim "Cancelled."; echo ""; exit 0
                 fi
@@ -26,9 +35,7 @@ if [ -z "$SERVICE" ]; then
                 gum_spin "Stopping all containers..." compose_cmd stop
                 msg_success "Stopped. Use ${S_BOLD}arr start${S_RESET}${C_TEXT} to bring them back."
                 ;;
-            "Stop a single service")
-                SERVICE=$(gum_choose_service "Stop which service?" "true") || { msg_dim "Cancelled."; echo ""; exit 0; }
-                [ -z "$SERVICE" ] && { msg_dim "Cancelled."; echo ""; exit 0; }
+            *)
                 echo ""
                 gum_spin "Stopping ${SERVICE}..." compose_cmd stop "$SERVICE"
                 msg_success "${SERVICE} stopped."

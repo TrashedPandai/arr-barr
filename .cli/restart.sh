@@ -16,13 +16,17 @@ case "$SERVICE" in
         if $HAS_GUM; then
             # Interactive group menu
             choice=$(gum choose --header "  What to restart?" \
-                "All containers" \
+                "Never mind" \
                 "VPN + Downloads" \
                 "Downloads only" \
-                "Pick a service...") || { msg_dim "Cancelled."; echo ""; exit 0; }
+                "Pick a service..." \
+                "Restart ALL containers") || { msg_dim "Cancelled."; echo ""; exit 0; }
 
             case "$choice" in
-                "All containers")
+                "Never mind")
+                    msg_dim "Cancelled."; echo ""; exit 0
+                    ;;
+                "Restart ALL containers")
                     if ! gum_confirm "Restart all containers?"; then
                         msg_dim "Cancelled."; echo ""; exit 0
                     fi

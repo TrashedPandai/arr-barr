@@ -197,12 +197,17 @@ gum_choose_service() {
 gum_spin() {
     local msg="$1"
     shift
+    # Always run command in background + spinner overlay
+    # (gum spin -- cant call bash functions like compose_cmd)
+    "$@" > /dev/null 2>&1 &
+    local pid=$!
     if $HAS_GUM; then
-        gum spin --spinner dot --title "  $msg" -- "$@"
+        gum spin --spinner dot --title "  $msg" -- bash -c "while kill -0 $pid 2>/dev/null; do sleep 0.1; done"
+        wait $pid 2>/dev/null
     else
-        "$@" > /dev/null 2>&1 &
-        spin_while $! "$msg"
+        spin_while $pid "$msg"
     fi
+    return $?
 }
 
 # ── Message Helpers ───────────────────────────────────────────────────────────
