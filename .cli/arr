@@ -22,11 +22,119 @@ fi
 
 CLI_DIR="$ARR_HOME/.cli"
 
+# ── Interactive menu (no args + gum available) ────────────────────────────────
+
+show_interactive_menu() {
+    source "$CLI_DIR/branding.sh"
+    export_gum_theme
+    show_logo
+
+    local choice
+    choice=$(gum choose --header "  What would you like to do?" \
+        "dashboard  — Full system dashboard" \
+        "status     — Is everything running?" \
+        "start      — Boot up the stack" \
+        "stop       — Shut it all down" \
+        "restart    — Restart containers" \
+        "update     — Pull latest updates" \
+        "downloads  — Live download dashboard" \
+        "vpn        — Check VPN tunnel" \
+        "logs       — View service logs" \
+        "backup     — Manage backups" \
+        "doctor     — Diagnose & auto-fix" \
+        "setup      — First-time setup" \
+        "help       — Show all commands")
+
+    # Extract the command name (everything before the first space)
+    local cmd="${choice%%  *}"
+    cmd="${cmd// /}"  # trim any remaining spaces
+
+    if [ -n "$cmd" ]; then
+        exec "$0" "$cmd"
+    fi
+}
+
+# ── Static help tree ──────────────────────────────────────────────────────────
+
+show_help() {
+    source "$CLI_DIR/branding.sh"
+    show_logo
+
+    # Catppuccin-themed help menu
+    local_sapphire='\033[38;2;116;199;236m'
+    local_text='\033[38;2;205;214;244m'
+    local_sub='\033[38;2;166;173;200m'
+    local_overlay='\033[38;2;108;112;134m'
+    local_surface='\033[38;2;69;71;90m'
+    local_bold='\033[1m'
+    local_dim='\033[2m'
+    local_reset='\033[0m'
+    local_mauve='\033[38;2;203;166;247m'
+    local_green='\033[38;2;166;227;161m'
+    local_peach='\033[38;2;250;179;135m'
+    local_teal='\033[38;2;148;226;213m'
+
+    echo -e "  ${local_sub}Usage: ${local_bold}arr${local_reset}${local_sub} <command>${local_reset}"
+    echo ""
+
+    echo -e "  ${local_sapphire}${local_bold}Getting Started${local_reset}"
+    echo -e "  ${local_surface}|${local_reset}"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "setup" "Run this first! Sets everything up"
+    printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "status" "Is everything running? Check here"
+    echo ""
+
+    echo -e "  ${local_green}${local_bold}Day-to-Day${local_reset}"
+    echo -e "  ${local_surface}|${local_reset}"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "start" "Start the whole stack"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "stop" "Stop the whole stack"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "restart" "Restart everything"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "update" "Pull latest updates and apply"
+    printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "doctor" "Check for problems and auto-fix"
+    echo ""
+
+    echo -e "  ${local_peach}${local_bold}Monitoring${local_reset}"
+    echo -e "  ${local_surface}|${local_reset}"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "dashboard" "Full system dashboard (the good one)"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "downloads" "Live download dashboard"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "vpn" "Check VPN tunnel status"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "logs <svc>" "View service logs"
+    printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "logs <svc> -f" "Follow logs live"
+    echo ""
+
+    echo -e "  ${local_mauve}${local_bold}Shortcuts${local_reset}"
+    echo -e "  ${local_surface}|${local_reset}"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "start radarr" "Start just one service"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "restart vpn" "Restart VPN + download clients"
+    printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "dl --once" "Download snapshot (no live)"
+    echo ""
+
+    echo -e "  ${local_teal}${local_bold}Services${local_reset}"
+    echo -e "  ${local_surface}|${local_reset}"
+    printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "radarr (movies), sonarr (tv), lidarr (music)"
+    printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "bazarr (subtitles), jellyfin (streaming)"
+    printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "seerr (requests), prowlarr (search)"
+    printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "transmission (torrents), sabnzbd (usenet)"
+    printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "lazylibrarian (books), kavita (reader)"
+    printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "audiobookshelf (audiobooks), questarr (games)"
+    printf "  ${local_surface}└─${local_reset} ${local_overlay}%-42s${local_reset}\n" "gluetun (vpn), flaresolverr (anti-bot)"
+    echo ""
+
+    echo -e "  ${local_dim}Aliases: db=dashboard, st=stat=status, up=update, doc=doctor, dl=downloads, log=logs, bk=backup, hp=health${local_reset}"
+    echo -e "  ${local_dim}Stack location: $ARR_HOME${local_reset}"
+    echo ""
+}
+
+# ── Command Dispatch ──────────────────────────────────────────────────────────
+
 case "${1:-}" in
+    dashboard|db)
+        shift
+        bash "$CLI_DIR/dashboard.sh" "$@"
+        ;;
     setup)
         bash "$CLI_DIR/setup.sh"
         ;;
-    status|st)
+    status|st|stat)
         bash "$CLI_DIR/status.sh"
         ;;
     update|up)
@@ -65,72 +173,16 @@ case "${1:-}" in
         shift
         bash "$CLI_DIR/start.sh" "$@"
         ;;
-    help|--help|-h|"")
-        source "$CLI_DIR/branding.sh"
-        show_logo
-
-        # Catppuccin-themed help menu
-        local_sapphire='\033[38;2;116;199;236m'
-        local_text='\033[38;2;205;214;244m'
-        local_sub='\033[38;2;166;173;200m'
-        local_overlay='\033[38;2;108;112;134m'
-        local_surface='\033[38;2;69;71;90m'
-        local_bold='\033[1m'
-        local_dim='\033[2m'
-        local_reset='\033[0m'
-        local_mauve='\033[38;2;203;166;247m'
-        local_green='\033[38;2;166;227;161m'
-        local_peach='\033[38;2;250;179;135m'
-        local_teal='\033[38;2;148;226;213m'
-
-        echo -e "  ${local_sub}Usage: ${local_bold}arr${local_reset}${local_sub} <command>${local_reset}"
-        echo ""
-
-        echo -e "  ${local_sapphire}${local_bold}Getting Started${local_reset}"
-        echo -e "  ${local_surface}│${local_reset}"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "setup" "Run this first! Sets everything up"
-        printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "status" "Is everything running? Check here"
-        echo ""
-
-        echo -e "  ${local_green}${local_bold}Day-to-Day${local_reset}"
-        echo -e "  ${local_surface}│${local_reset}"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "start" "Start the whole stack"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "stop" "Stop the whole stack"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "restart" "Restart everything"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "update" "Pull latest updates and apply"
-        printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "doctor" "Check for problems and auto-fix"
-        echo ""
-
-        echo -e "  ${local_peach}${local_bold}Monitoring${local_reset}"
-        echo -e "  ${local_surface}│${local_reset}"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "health" "Quick API health check (fast!)"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "downloads" "Live download dashboard"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "vpn" "Check VPN tunnel status"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "logs <svc>" "View service logs"
-        printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "logs <svc> -f" "Follow logs live"
-        echo ""
-
-        echo -e "  ${local_mauve}${local_bold}Shortcuts${local_reset}"
-        echo -e "  ${local_surface}│${local_reset}"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "start radarr" "Start just one service"
-        printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "restart vpn" "Restart VPN + download clients"
-        printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "dl --once" "Download snapshot (no live)"
-        echo ""
-
-        echo -e "  ${local_teal}${local_bold}Services${local_reset}"
-        echo -e "  ${local_surface}│${local_reset}"
-        printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "radarr (movies), sonarr (tv), lidarr (music)"
-        printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "bazarr (subtitles), jellyfin (streaming)"
-        printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "seerr (requests), prowlarr (search)"
-        printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "transmission (torrents), sabnzbd (usenet)"
-        printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "lazylibrarian (books), kavita (reader)"
-        printf "  ${local_surface}├─${local_reset} ${local_overlay}%-42s${local_reset}\n" "audiobookshelf (audiobooks), questarr (games)"
-        printf "  ${local_surface}└─${local_reset} ${local_overlay}%-42s${local_reset}\n" "gluetun (vpn), flaresolverr (anti-bot)"
-        echo ""
-
-        echo -e "  ${local_dim}Aliases: st=status, up=update, doc=doctor, dl=downloads, log=logs, bk=backup, hp=health${local_reset}"
-        echo -e "  ${local_dim}Stack location: $ARR_HOME${local_reset}"
-        echo ""
+    help|--help|-h)
+        show_help
+        ;;
+    "")
+        # No args: interactive menu if gum available, otherwise help
+        if command -v gum &>/dev/null || [ -x /usr/local/bin/gum ]; then
+            show_interactive_menu
+        else
+            show_help
+        fi
         ;;
     *)
         echo "Unknown command: $1"

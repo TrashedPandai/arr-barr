@@ -329,3 +329,56 @@ show_header() {
     printf "╯${S_RESET}\n"
     echo ""
 }
+
+# ── Gum Integration ──────────────────────────────────────────────────────────
+
+HAS_GUM=false
+
+export_gum_theme() {
+    # gum needs a TTY for interactive components (table, choose, filter, confirm, spin)
+    # Gracefully disable when no TTY is available (e.g., cron, non-interactive SSH)
+    if ! [ -t 1 ]; then
+        return 0
+    fi
+
+    if command -v gum &>/dev/null; then
+        HAS_GUM=true
+    elif [ -x /usr/local/bin/gum ]; then
+        HAS_GUM=true
+        export PATH="/usr/local/bin:$PATH"
+    else
+        return 0
+    fi
+
+    # Catppuccin Mocha hex values for gum env vars
+    export GUM_CONFIRM_PROMPT_FOREGROUND="#cdd6f4"
+    export GUM_CONFIRM_SELECTED_FOREGROUND="#1e1e2e"
+    export GUM_CONFIRM_SELECTED_BACKGROUND="#89b4fa"
+    export GUM_CONFIRM_UNSELECTED_FOREGROUND="#6c7086"
+
+    export GUM_CHOOSE_CURSOR_FOREGROUND="#f5c2e7"
+    export GUM_CHOOSE_HEADER_FOREGROUND="#74c7ec"
+    export GUM_CHOOSE_SELECTED_FOREGROUND="#cdd6f4"
+    export GUM_CHOOSE_UNSELECTED_FOREGROUND="#a6adc8"
+
+    export GUM_FILTER_INDICATOR_FOREGROUND="#f5c2e7"
+    export GUM_FILTER_MATCH_FOREGROUND="#f38ba8"
+    export GUM_FILTER_HEADER_FOREGROUND="#74c7ec"
+    export GUM_FILTER_PROMPT_FOREGROUND="#fab387"
+    export GUM_FILTER_TEXT_FOREGROUND="#cdd6f4"
+
+    export GUM_SPIN_SPINNER_FOREGROUND="#74c7ec"
+    export GUM_SPIN_TITLE_FOREGROUND="#bac2de"
+
+    export GUM_STYLE_FOREGROUND="#cdd6f4"
+    export GUM_STYLE_BORDER_FOREGROUND="#74c7ec"
+
+    export GUM_INPUT_PROMPT_FOREGROUND="#fab387"
+    export GUM_INPUT_CURSOR_FOREGROUND="#f5c2e7"
+
+    export GUM_TABLE_BORDER_FOREGROUND="#45475a"
+    export GUM_TABLE_SELECTED_FOREGROUND="#1e1e2e"
+    export GUM_TABLE_SELECTED_BACKGROUND="#89b4fa"
+    export GUM_TABLE_CELL_FOREGROUND="#cdd6f4"
+    export GUM_TABLE_HEADER_FOREGROUND="#74c7ec"
+}

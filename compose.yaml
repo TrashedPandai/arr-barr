@@ -17,6 +17,11 @@
 #    VPN tunnel via Gluetun. Jellyfin streams the organized media.
 #    Seerr lets users request new content through a friendly UI.
 #
+#  IMAGE TAGS:
+#    Images are pinned to exact versions where possible to prevent surprise
+#    breakage. To update, change the tag and run: docker compose pull && docker compose up -d
+#    Images without semver tags (gluetun, lazylibrarian, kavita) use :latest.
+#
 # ==============================================================================
 
 services:
@@ -30,7 +35,7 @@ services:
   # ============================================================================
 
   gluetun:  # WireGuard VPN container — all downloads route through this
-    image: qmcgaw/gluetun:latest
+    image: qmcgaw/gluetun:latest  # no semver tags available
     container_name: gluetun
     cap_add:
       - NET_ADMIN
@@ -56,6 +61,11 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   # ============================================================================
@@ -67,7 +77,7 @@ services:
   # ============================================================================
 
   transmission:  # Torrent client — downloads torrents sent by the arr apps
-    image: lscr.io/linuxserver/transmission:latest
+    image: lscr.io/linuxserver/transmission:version-4.1.1-r1  # pinned 2026-03-14
     container_name: transmission
     network_mode: "service:gluetun"
     depends_on:
@@ -81,10 +91,15 @@ services:
       - ${DATA_ROOT}/config/transmission:/config
       # Mounted at /data for hardlink support — set download-dir to /data/downloads/torrents
       - ${DATA_ROOT}:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   sabnzbd:  # Usenet client — downloads NZBs sent by the arr apps
-    image: lscr.io/linuxserver/sabnzbd:latest
+    image: lscr.io/linuxserver/sabnzbd:version-4.5.5  # pinned 2026-03-14
     container_name: sabnzbd
     network_mode: "service:gluetun"
     depends_on:
@@ -97,6 +112,11 @@ services:
     volumes:
       - ${DATA_ROOT}/config/sabnzbd:/config
       - ${DATA_ROOT}:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   # ============================================================================
@@ -104,7 +124,7 @@ services:
   # ============================================================================
 
   prowlarr:  # Manages all your indexers, syncs them to the arr apps
-    image: lscr.io/linuxserver/prowlarr:latest
+    image: lscr.io/linuxserver/prowlarr:version-2.3.0.5236  # pinned 2026-03-14
     container_name: prowlarr
     # Hardcoded DNS bypasses any local DNS (Pi-hole, AdGuard, etc.)
     # Change to your preferred DNS servers if needed.
@@ -119,16 +139,27 @@ services:
       - ${DATA_ROOT}/config/prowlarr:/config
     ports:
       - "9696:9696"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   flaresolverr:  # Bypasses Cloudflare protection on some indexer sites
-    image: ghcr.io/flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:v3.4.6  # pinned 2026-03-14
     container_name: flaresolverr
+    init: true  # reaps zombie Chromium child processes
     environment:
       - LOG_LEVEL=info
       - TZ=${TZ}
     ports:
       - "8191:8191"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   # ============================================================================
@@ -139,7 +170,7 @@ services:
   # ============================================================================
 
   radarr:  # Movies — search, download, and organize your movie collection
-    image: lscr.io/linuxserver/radarr:latest
+    image: lscr.io/linuxserver/radarr:version-6.0.4.10291  # pinned 2026-03-14
     container_name: radarr
     dns:
       - 1.1.1.1
@@ -153,10 +184,15 @@ services:
       - ${DATA_ROOT}:/data
     ports:
       - "7878:7878"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   sonarr:  # TV Shows — search, download, and organize TV series
-    image: lscr.io/linuxserver/sonarr:latest
+    image: lscr.io/linuxserver/sonarr:version-4.0.16.2944  # pinned 2026-03-14
     container_name: sonarr
     dns:
       - 1.1.1.1
@@ -170,10 +206,15 @@ services:
       - ${DATA_ROOT}:/data
     ports:
       - "8989:8989"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   lidarr:  # Music — search, download, and organize your music library
-    image: lscr.io/linuxserver/lidarr:latest
+    image: lscr.io/linuxserver/lidarr:version-3.1.0.4875  # pinned 2026-03-14
     container_name: lidarr
     dns:
       - 1.1.1.1
@@ -187,10 +228,15 @@ services:
       - ${DATA_ROOT}:/data
     ports:
       - "8686:8686"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   bazarr:  # Subtitles — automatically finds and downloads subtitles for Radarr/Sonarr
-    image: lscr.io/linuxserver/bazarr:latest
+    image: lscr.io/linuxserver/bazarr:version-v1.5.6  # pinned 2026-03-14
     container_name: bazarr
     dns:
       - 1.1.1.1
@@ -204,6 +250,11 @@ services:
       - ${DATA_ROOT}:/data
     ports:
       - "6767:6767"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   # ============================================================================
@@ -212,7 +263,7 @@ services:
 
   lazylibrarian:  # Book search & download management (like Radarr but for books)
     profiles: ["lazylibrarian", "kavita", "audiobookshelf"]
-    image: lscr.io/linuxserver/lazylibrarian:latest
+    image: lscr.io/linuxserver/lazylibrarian:latest  # no semver tags (uses git hashes)
     container_name: lazylibrarian
     dns:
       - 1.1.1.1
@@ -227,11 +278,16 @@ services:
       - ${DATA_ROOT}:/data
     ports:
       - "5299:5299"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   kavita:  # Ebook reader — read your books in the browser (self-hosted Kindle)
     profiles: ["kavita"]
-    image: jvmilazz0/kavita:latest
+    image: jvmilazz0/kavita:latest  # no rolling version tags available
     container_name: kavita
     environment:
       - TZ=${TZ}
@@ -240,11 +296,16 @@ services:
       - ${DATA_ROOT}/media/books:/books:ro
     ports:
       - "5004:5000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   audiobookshelf:  # Audiobook & podcast server with progress tracking
     profiles: ["audiobookshelf"]
-    image: ghcr.io/advplyr/audiobookshelf:latest
+    image: ghcr.io/advplyr/audiobookshelf:2.33.0  # pinned 2026-03-14
     container_name: audiobookshelf
     environment:
       - TZ=${TZ}
@@ -254,6 +315,11 @@ services:
       - ${DATA_ROOT}/media/audiobooks:/audiobooks:ro
     ports:
       - "13378:80"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   # ============================================================================
@@ -261,7 +327,7 @@ services:
   # ============================================================================
 
   jellyfin:  # Stream your media to any device (self-hosted Netflix)
-    image: jellyfin/jellyfin:latest
+    image: jellyfin/jellyfin:10.11  # rolling minor version tag
     container_name: jellyfin
     network_mode: host
     environment:
@@ -271,17 +337,18 @@ services:
       - ${DATA_ROOT}/config/jellyfin-cache:/cache
       - ${DATA_ROOT}/media/movies:/movies:ro
       - ${DATA_ROOT}/media/tv:/tv:ro
-    # GPU hardware transcoding (optional) — uncomment if you have a GPU:
-    #   1. Check your devices: ls -la /dev/dri/
-    #   2. Set GPU_RENDER_DEVICE and GPU_CARD_DEVICE in .env
-    #   3. Uncomment the two lines below
-    # devices:
-    #   - ${GPU_RENDER_DEVICE}:${GPU_RENDER_DEVICE}
-    #   - ${GPU_CARD_DEVICE}:${GPU_CARD_DEVICE}
+      - ${DATA_ROOT}/media/music:/music:ro
+    # GPU hardware transcoding (Intel QSV, NVIDIA, etc.)
+    # Configured per-deployment in compose.override.yaml — run: arr setup
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   seerr:  # Let users request movies & shows (integrates with Radarr + Sonarr)
-    image: fallenbagel/jellyseerr:latest
+    image: fallenbagel/jellyseerr:2.3.0  # pinned 2026-03-14
     container_name: seerr
     environment:
       - LOG_LEVEL=info
@@ -290,6 +357,11 @@ services:
       - ${DATA_ROOT}/config/seerr:/app/config
     ports:
       - "5055:5055"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
   # ============================================================================
@@ -297,7 +369,7 @@ services:
   # ============================================================================
 
   questarr:  # Game library management and tracking
-    image: ghcr.io/doezer/questarr:latest
+    image: ghcr.io/doezer/questarr:v1.2.2  # pinned 2026-03-14
     container_name: questarr
     dns:
       - 1.1.1.1
@@ -311,4 +383,9 @@ services:
       - ${DATA_ROOT}/config/questarr:/app/data
     ports:
       - "5002:5000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped

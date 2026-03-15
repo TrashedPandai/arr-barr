@@ -8,7 +8,7 @@ detect_docker
 show_logo
 show_header "Arr Media Stack  —  Setup"
 
-TOTAL_STEPS=6
+TOTAL_STEPS=8
 
 # ── Already set up? ──────────────────────────────────────────────────────────
 
@@ -33,9 +33,56 @@ else
 fi
 echo ""
 
-# ── Step 2: .env file ───────────────────────────────────────────────────────
+# ── Step 2: Install gum (interactive CLI toolkit) ────────────────────────────
 
-step 2 $TOTAL_STEPS "Configuring environment"
+step 2 $TOTAL_STEPS "Installing gum"
+
+GUM_VERSION="0.17.0"
+
+if command -v gum &>/dev/null || [ -x /usr/local/bin/gum ]; then
+    installed_ver="$(gum --version 2>/dev/null || /usr/local/bin/gum --version 2>/dev/null || echo "unknown")"
+    msg_success "gum already installed (${installed_ver})"
+else
+    # Detect architecture
+    case "$(uname -m)" in
+        x86_64|amd64)  GUM_ARCH="x86_64" ;;
+        aarch64|arm64) GUM_ARCH="arm64" ;;
+        *)
+            msg_warn "Unsupported architecture: $(uname -m). Skipping gum install."
+            msg_dim "  Interactive features will be unavailable."
+            GUM_ARCH=""
+            ;;
+    esac
+
+    if [ -n "${GUM_ARCH:-}" ]; then
+        GUM_URL="https://github.com/charmbracelet/gum/releases/download/v${GUM_VERSION}/gum_${GUM_VERSION}_Linux_${GUM_ARCH}.tar.gz"
+        GUM_TMP=$(mktemp -d /tmp/gum-install-XXXXXX)
+
+        msg_dim "  Downloading gum v${GUM_VERSION} for ${GUM_ARCH}..."
+
+        if curl -fsSL "$GUM_URL" -o "$GUM_TMP/gum.tar.gz" 2>/dev/null; then
+            tar -xzf "$GUM_TMP/gum.tar.gz" -C "$GUM_TMP" 2>/dev/null
+            GUM_BIN="$(find "$GUM_TMP" -name gum -type f | head -1)"
+            if [ -n "$GUM_BIN" ] && sudo cp "$GUM_BIN" /usr/local/bin/gum && sudo chmod +x /usr/local/bin/gum; then
+                msg_success "gum v${GUM_VERSION} installed to /usr/local/bin/gum"
+                # Re-init gum theme now that it's available
+                export_gum_theme
+            else
+                msg_warn "Could not install gum binary. Interactive features will be unavailable."
+            fi
+        else
+            msg_warn "Could not download gum. Interactive features will be unavailable."
+            msg_dim "  You can install it manually: https://github.com/charmbracelet/gum"
+        fi
+
+        rm -rf "$GUM_TMP"
+    fi
+fi
+echo ""
+
+# ── Step 3: .env file ───────────────────────────────────────────────────────
+
+step 3 $TOTAL_STEPS "Configuring environment"
 
 echo -e "  ${C_SUBTEXT0}Creating .env from template...${S_RESET}"
 cp "$ARR_HOME/.env.example" "$ARR_HOME/.env"
@@ -63,7 +110,15 @@ if grep -q "your_private_key_here" "$ARR_HOME/.env"; then
     echo -e "    ${C_SUBTEXT0}Open .env in a text editor:${S_RESET}"
     echo -e "      ${S_BOLD}nano $ARR_HOME/.env${S_RESET}"
     echo ""
-    read -rp "  Press Enter after you've edited .env, or Ctrl+C to exit... "
+
+    if $HAS_GUM; then
+        gum confirm "Have you edited .env with your VPN credentials?" || {
+            msg_error "Edit .env and run arr setup again."
+            exit 1
+        }
+    else
+        read -rp "  Press Enter after you've edited .env, or Ctrl+C to exit... "
+    fi
     echo ""
 
     if grep -q "your_private_key_here" "$ARR_HOME/.env"; then
@@ -72,9 +127,9 @@ if grep -q "your_private_key_here" "$ARR_HOME/.env"; then
     fi
 fi
 
-# ── Step 3: Create directories ───────────────────────────────────────────────
+# ── Step 4: Create directories ───────────────────────────────────────────────
 
-step 3 $TOTAL_STEPS "Creating directory tree"
+step 4 $TOTAL_STEPS "Creating directory tree"
 
 DATA_ROOT="$(grep '^DATA_ROOT=' "$ARR_HOME/.env" | cut -d= -f2- || true)"
 
@@ -111,9 +166,9 @@ done
 msg_success "Directories created"
 echo ""
 
-# ── Step 4: Config templates ────────────────────────────────────────────────
+# ── Step 5: Config templates ────────────────────────────────────────────────
 
-step 4 $TOTAL_STEPS "Applying config templates"
+step 5 $TOTAL_STEPS "Applying config templates"
 
 apply_template() {
     local src="$1"
@@ -138,9 +193,9 @@ apply_template "$ARR_HOME/templates/transmission/settings.json" "$DATA_ROOT/conf
 apply_template "$ARR_HOME/templates/lazylibrarian/config.ini" "$DATA_ROOT/config/lazylibrarian/config.ini"
 echo ""
 
-# ── Step 5: Seerr permissions ───────────────────────────────────────────────
+# ── Step 6: Seerr permissions ───────────────────────────────────────────────
 
-step 5 $TOTAL_STEPS "Setting Seerr permissions"
+step 6 $TOTAL_STEPS "Setting Seerr permissions"
 
 chown -R 1000:1000 "$DATA_ROOT/config/seerr" 2>/dev/null && {
     msg_success "Seerr config owned by 1000:1000"
@@ -150,9 +205,54 @@ chown -R 1000:1000 "$DATA_ROOT/config/seerr" 2>/dev/null && {
 }
 echo ""
 
-# ── Step 6: Pull images ─────────────────────────────────────────────────────
+# ── Step 7: GPU hardware transcoding ────────────────────────────────────────
 
-step 6 $TOTAL_STEPS "Pulling Docker images"
+step 7 $TOTAL_STEPS "Detecting GPU for hardware transcoding"
+
+OVERRIDE_FILE="$ARR_HOME/compose.override.yaml"
+
+if [ -e /dev/dri/renderD128 ]; then
+    msg_success "Found GPU: /dev/dri/renderD128"
+
+    # Detect the video group GID
+    VIDEO_GID="$(stat -c '%g' /dev/dri/renderD128 2>/dev/null || echo "")"
+    if [ -z "$VIDEO_GID" ] || [ "$VIDEO_GID" = "0" ]; then
+        VIDEO_GID="$(getent group video 2>/dev/null | cut -d: -f3 || echo "44")"
+        msg_dim "  Using default video GID: $VIDEO_GID"
+    else
+        msg_dim "  Video device GID: $VIDEO_GID"
+    fi
+
+    if gum_confirm "Enable GPU hardware transcoding in Jellyfin?" "y"; then
+        cat > "$OVERRIDE_FILE" <<GPUEOF
+# Local overrides — not tracked by git
+# Generated by: arr setup (GPU detection)
+services:
+  jellyfin:
+    group_add:
+      - "$VIDEO_GID"  # /dev/dri video group
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/card0:/dev/dri/card0
+GPUEOF
+        msg_success "GPU transcoding enabled in compose.override.yaml"
+        msg_dim "  After starting, enable QSV in Jellyfin Dashboard → Playback → Transcoding"
+    else
+        # Remove override if it exists from a previous setup
+        rm -f "$OVERRIDE_FILE"
+        msg_dim "GPU transcoding skipped. Run arr setup again to enable later."
+    fi
+else
+    msg_dim "No GPU detected (/dev/dri/renderD128 not found)"
+    msg_dim "Jellyfin will use software transcoding (CPU only)"
+    # Remove any leftover GPU override
+    rm -f "$OVERRIDE_FILE"
+fi
+echo ""
+
+# ── Step 8: Pull images ─────────────────────────────────────────────────────
+
+step 8 $TOTAL_STEPS "Pulling Docker images"
 echo ""
 compose_cmd pull
 echo ""
@@ -161,7 +261,7 @@ echo ""
 
 # ── Optionally start ─────────────────────────────────────────────────────────
 
-if confirm "Start the stack now?" "y"; then
+if gum_confirm "Start the stack now?" "y"; then
     echo ""
     compose_cmd up -d > /tmp/.arr-setup-$$ 2>&1 &
     spin_while $! "Starting the stack..."

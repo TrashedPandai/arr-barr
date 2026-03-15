@@ -11,7 +11,7 @@ show_header "Arr Media Stack  —  Update"
 
 msg_warn "This will pull updates and restart changed containers."
 echo ""
-if ! confirm "Continue?" "y"; then
+if ! gum_confirm "Continue?" "y"; then
     msg_dim "Cancelled."
     echo ""
     exit 0
@@ -21,7 +21,11 @@ echo ""
 # Pull latest repo changes
 if command -v git &>/dev/null && [ -d "$ARR_HOME/.git" ]; then
     git -C "$ARR_HOME" pull --ff-only > /tmp/.arr-update-$$ 2>&1 &
-    spin_while $! "Pulling latest changes from git..."
+    if $HAS_GUM; then
+        gum spin --spinner dot --title "  Pulling latest changes from git..." -- wait $!
+    else
+        spin_while $! "Pulling latest changes from git..."
+    fi
 
     git_result="$(cat /tmp/.arr-update-$$ 2>/dev/null)" || git_result=""
     if echo "$git_result" | grep -q "Already up to date"; then
@@ -39,7 +43,11 @@ compose_cmd pull
 echo ""
 
 compose_cmd up -d > /tmp/.arr-update-$$ 2>&1 &
-spin_while $! "Restarting changed containers..."
+if $HAS_GUM; then
+    gum spin --spinner dot --title "  Restarting changed containers..." -- wait $!
+else
+    spin_while $! "Restarting changed containers..."
+fi
 rm -f /tmp/.arr-update-$$
 
 echo ""

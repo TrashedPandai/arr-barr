@@ -6,6 +6,9 @@
 CLI_DIR="$(cd "$(dirname "${BASH_SOURCE[1]:-${BASH_SOURCE[0]}}")" && pwd)"
 source "$CLI_DIR/branding.sh"
 
+# Initialize gum theme
+export_gum_theme
+
 # Paths
 ARR_HOME="$(cd "$CLI_DIR/.." && pwd)"
 
@@ -109,9 +112,6 @@ human_eta() {
 
 # ── Table Helpers ─────────────────────────────────────────────────────────────
 
-# Print a formatted table row
-# Usage: table_row "col1" "col2" "col3" ... with widths
-# Or simpler: kv_line "Key" "Value"
 kv_line() {
     local key="$1"
     local value="$2"
@@ -122,8 +122,7 @@ kv_line() {
 
 # ── Confirmations ────────────────────────────────────────────────────────────
 
-# Ask yes/no with styled prompt
-# Usage: confirm "Are you sure?" && do_thing
+# Legacy confirm (ANSI-only fallback)
 confirm() {
     local msg="${1:-Continue?}"
     local default="${2:-n}"
@@ -133,6 +132,77 @@ confirm() {
     read -r answer
     answer="${answer:-$default}"
     [[ "$answer" =~ ^[Yy] ]]
+}
+
+# Gum-enhanced confirm with fallback
+gum_confirm() {
+    local msg="${1:-Continue?}"
+    local default="${2:-n}"
+    if $HAS_GUM; then
+        if [ "$default" = "y" ]; then
+            gum confirm --default=yes "$msg"
+        else
+            gum confirm "$msg"
+        fi
+    else
+        confirm "$msg" "$default"
+    fi
+}
+
+# ── Gum Service Picker ──────────────────────────────────────────────────────
+
+# Interactive fuzzy service picker
+# Usage: gum_choose_service "header" [true|false for running_only]
+gum_choose_service() {
+    local header="${1:-Select a service}"
+    local running_only="${2:-false}"
+
+    if ! $HAS_GUM; then
+        msg_error "Service name required."
+        msg_dim "Available: ${KNOWN_SERVICES}"
+        return 1
+    fi
+
+    local options=()
+    if [ "$running_only" = "true" ]; then
+        local running
+        running=$($DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null || true)
+        for entry in "${SERVICES[@]}"; do
+            IFS='|' read -r name port label <<< "$entry"
+            if echo "$running" | grep -qw "$name"; then
+                options+=("${name}  ${label}")
+            fi
+        done
+    else
+        for entry in "${SERVICES[@]}"; do
+            IFS='|' read -r name port label <<< "$entry"
+            options+=("${name}  ${label}")
+        done
+    fi
+
+    if [ ${#options[@]} -eq 0 ]; then
+        msg_error "No services available."
+        return 1
+    fi
+
+    local choice
+    choice=$(printf '%s\n' "${options[@]}" | gum filter --header "  $header" --placeholder "Type to search..." --width 40)
+    echo "${choice%%  *}"
+}
+
+# ── Gum Spin Wrapper ─────────────────────────────────────────────────────────
+
+# Run a command with a gum spinner, fallback to spin_while
+# Usage: gum_spin "message" command [args...]
+gum_spin() {
+    local msg="$1"
+    shift
+    if $HAS_GUM; then
+        gum spin --spinner dot --title "  $msg" -- "$@"
+    else
+        "$@" > /dev/null 2>&1 &
+        spin_while $! "$msg"
+    fi
 }
 
 # ── Message Helpers ───────────────────────────────────────────────────────────
@@ -206,8 +276,6 @@ compose_cmd() {
 
 # ── Progress Steps ────────────────────────────────────────────────────────────
 
-# Show a numbered step indicator
-# Usage: step 1 5 "Installing dependencies"
 step() {
     local current=$1
     local total=$2

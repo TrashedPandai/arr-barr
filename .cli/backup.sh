@@ -1,4 +1,4 @@
-#\!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 CLI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,7 +20,7 @@ list_backups() {
     show_logo_static
     show_header "Arr Media Stack  —  Backups"
 
-    if [ \! -d "$BACKUP_DIR" ] || [ -z "$(ls -A "$BACKUP_DIR"/*.tar.gz 2>/dev/null)" ]; then
+    if [ ! -d "$BACKUP_DIR" ] || [ -z "$(ls -A "$BACKUP_DIR"/*.tar.gz 2>/dev/null)" ]; then
         msg_dim "No backups found."
         echo ""
         exit 0
@@ -38,11 +38,12 @@ list_backups() {
         local fdate
         fdate="$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null || echo 0)"
         local display_date
-        display_date="$(date -d "@$fdate" +%Y-%m-%d %H:%M:%S 2>/dev/null || date -r "$fdate" +%Y-%m-%d %H:%M:%S 2>/dev/null || echo unknown)"
+        display_date="$(date -d "@$fdate" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || date -r "$fdate" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || echo unknown)"
         local display_size
         display_size="$(human_size "$fsize")"
 
-        printf "  ${C_TEXT}%-40s${S_RESET}  ${C_SUBTEXT0}%s${S_RESET}  ${C_OVERLAY0}%s${S_RESET}\n"             "$fname" "$display_date" "$display_size"
+        printf "  ${C_TEXT}%-40s${S_RESET}  ${C_SUBTEXT0}%s${S_RESET}  ${C_OVERLAY0}%s${S_RESET}\n" \
+            "$fname" "$display_date" "$display_size"
     done
 
     echo ""
@@ -57,7 +58,7 @@ prune_backups() {
     show_logo_static
     show_header "Arr Media Stack  —  Prune Backups"
 
-    if [ \! -d "$BACKUP_DIR" ]; then
+    if [ ! -d "$BACKUP_DIR" ]; then
         msg_dim "No backups directory found. Nothing to prune."
         echo ""
         exit 0
@@ -77,7 +78,7 @@ prune_backups() {
     msg_info "Found $total backup(s). Keeping $keep most recent, removing $remove_count."
     echo ""
 
-    if \! confirm "Delete $remove_count old backup(s)?"; then
+    if ! gum_confirm "Delete $remove_count old backup(s)?"; then
         msg_dim "Cancelled."
         echo ""
         exit 0
@@ -103,7 +104,7 @@ create_backup() {
     show_logo_static
     show_header "Arr Media Stack  —  Backup"
 
-    if [ \! -d "$CONFIG_DIR" ]; then
+    if [ ! -d "$CONFIG_DIR" ]; then
         msg_error "Config directory not found: $CONFIG_DIR"
         exit 1
     fi
@@ -121,9 +122,13 @@ create_backup() {
 
     # Run tar in background and show spinner
     tar -czf "$backup_file" -C "$DATA_ROOT" config &
-    local tar_pid=$\!
+    local tar_pid=$!
 
-    spin_while "$tar_pid" "Creating backup archive..."
+    if $HAS_GUM; then
+        gum spin --spinner dot --title "  Creating backup archive..." -- wait $tar_pid
+    else
+        spin_while "$tar_pid" "Creating backup archive..."
+    fi
     local exit_code=$?
 
     if [ $exit_code -ne 0 ]; then
@@ -137,7 +142,7 @@ create_backup() {
     local display_size
     display_size="$(human_size "$backup_size")"
 
-    msg_success "Backup complete\!"
+    msg_success "Backup complete!"
     echo ""
     kv_line "File:" "$(basename "$backup_file")"
     kv_line "Size:" "$display_size"
@@ -152,7 +157,7 @@ case "${1:-}" in
         list_backups
         ;;
     --prune|-p)
-        if [ -z "${2:-}" ] || \! [[ "${2:-}" =~ ^[0-9]+$ ]]; then
+        if [ -z "${2:-}" ] || ! [[ "${2:-}" =~ ^[0-9]+$ ]]; then
             msg_error "Usage: arr backup --prune N  (keep N most recent backups)"
             exit 1
         fi
@@ -162,14 +167,39 @@ case "${1:-}" in
         echo ""
         echo "Usage: arr backup [OPTIONS]"
         echo ""
-        echo "  (no args)    Create a new timestamped backup"
+        echo "  (no args)    Create a new backup (or choose action with gum)"
         echo "  --list, -l   List existing backups"
         echo "  --prune N    Keep only the N most recent backups"
         echo "  --help, -h   Show this help"
         echo ""
         ;;
     "")
-        create_backup
+        if $HAS_GUM; then
+            # Interactive action menu
+            action=$(gum choose --header "  Backup action" \
+                "Create new backup" \
+                "List existing backups" \
+                "Prune old backups") || exit 0
+
+            case "$action" in
+                "Create new backup")
+                    create_backup
+                    ;;
+                "List existing backups")
+                    list_backups
+                    ;;
+                "Prune old backups")
+                    keep=$(gum input --header "  How many backups to keep?" --placeholder "5" --width 20) || exit 0
+                    if [ -z "$keep" ] || ! [[ "$keep" =~ ^[0-9]+$ ]]; then
+                        msg_error "Enter a number."
+                        exit 1
+                    fi
+                    prune_backups "$keep"
+                    ;;
+            esac
+        else
+            create_backup
+        fi
         ;;
     *)
         msg_error "Unknown option: $1"

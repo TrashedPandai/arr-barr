@@ -27,13 +27,15 @@ fi
 
 # Get public IP through the VPN tunnel
 $DOCKER_CMD exec gluetun wget -qO- --timeout=5 http://ipinfo.io/json > /tmp/.arr-vpn-$$ 2>/dev/null &
-spin_while $! "Checking tunnel..."
+if $HAS_GUM; then
+    gum spin --spinner dot --title "  Checking tunnel..." -- wait $!
+else
+    spin_while $! "Checking tunnel..."
+fi
 
 vpn_info="$(cat /tmp/.arr-vpn-$$ 2>/dev/null)" || vpn_info=""
 rm -f /tmp/.arr-vpn-$$
 
-echo ""
-section_header "TUNNEL" "$C_GREEN"
 echo ""
 
 if [ -n "$vpn_info" ]; then
@@ -58,6 +60,8 @@ if [ -n "$vpn_info" ]; then
     fi
 
     if [ -n "$vpn_ip" ]; then
+        section_header "TUNNEL" "$C_GREEN"
+        echo ""
         echo -e "    $(dot_up)  ${S_BOLD}${C_GREEN}CONNECTED${S_RESET}"
         echo ""
         kv_line "    Public IP" "$vpn_ip" "$C_SUBTEXT0" "${S_BOLD}${C_TEXT}"

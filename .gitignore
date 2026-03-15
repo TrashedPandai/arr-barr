@@ -10,3 +10,5 @@ media/
 .DS_Store
 Thumbs.db
 *.swp
+compose.override.yaml
+*.bak

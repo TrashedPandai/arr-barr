@@ -1,4 +1,4 @@
-#\!/usr/bin/env bash
+#!/usr/bin/env bash
 # Bash tab completion for the arr CLI
 #
 # To enable, add one of the following to your ~/.bashrc:
@@ -15,8 +15,8 @@ _arr_complete() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     # Top-level commands
-    local commands="setup status start stop restart update doctor downloads vpn logs backup help"
-    local aliases="st up doc dl log"
+    local commands="setup status start stop restart update doctor dashboard downloads vpn logs backup health help"
+    local aliases="st up doc db dl log bk hp"
 
     # Service names
     local services="gluetun transmission sabnzbd prowlarr flaresolverr radarr sonarr lidarr bazarr jellyfin seerr lazylibrarian kavita audiobookshelf questarr"
@@ -56,13 +56,17 @@ _arr_complete() {
             COMPREPLY=( $(compgen -W "--once --live" -- "$cur") )
             return
             ;;
-        backup)
+        backup|bk)
             if [ "$COMP_CWORD" -eq 2 ]; then
                 COMPREPLY=( $(compgen -W "--list --prune --help" -- "$cur") )
             fi
             return
             ;;
-        status|st|setup|update|up|doctor|doc|vpn|help)
+        dashboard|db|health|hp)
+            # These take no arguments
+            return
+            ;;
+        status|st|stat|setup|update|up|doctor|doc|vpn|help)
             # These commands take no arguments
             return
             ;;
