@@ -7,6 +7,12 @@
 
 [🌐 arrbarr.com](https://arrbarr.com) · [Get Started](#-get-started) · [How It Works](#-how-it-works) · [Docs](https://arrbarr.com/docs)
 
+<br>
+
+<img src="ArrTerminal.gif" alt="arr-barr terminal demo" width="520">
+
+<br>
+
 ---
 
 **One command sets up 15 services.** Add a movie, and minutes later it's streaming on your TV — organized with perfect names and artwork, subtitles included. Repeat for TV shows, music, books, audiobooks, and games.
