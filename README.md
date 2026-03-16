@@ -2,14 +2,14 @@
 
 # arr-barr
 
-### Your own Netflix, Spotify, Kindle, and Audible.
-### Self-hosted. Automated. No subscriptions.
+### Self-hosted media management and automation.
+### Movies, TV, music, books, audiobooks, and games.
 
 [🌐 arrbarr.com](https://arrbarr.com) · [Get Started](#-get-started) · [How It Works](#-how-it-works) · [Docs](https://arrbarr.com/docs)
 
 ---
 
-**One command sets up 15 services.** Request a movie, and minutes later it's streaming on your TV — downloaded through an encrypted VPN, organized with perfect names and artwork, subtitles included. Repeat for TV shows, music, books, audiobooks, and games.
+**One command sets up 15 services.** Add a movie, and minutes later it's streaming on your TV — organized with perfect names and artwork, subtitles included. Repeat for TV shows, music, books, audiobooks, and games.
 
 **New here?** Visit **[arrbarr.com](https://arrbarr.com)** for visual guides, an interactive architecture tour, and a step-by-step walkthrough designed for non-technical users.
 
@@ -19,11 +19,11 @@
 
 | | What | How |
 |:---:|---|---|
-| 🎬 | **Movies & TV** | Request anything. It searches 12 sources, picks the best quality, downloads privately, and appears in Jellyfin ready to stream. |
+| 🎬 | **Movies & TV** | Add anything. It searches 12 indexers, picks the best quality, and appears in Jellyfin ready to stream. |
 | 🎵 | **Music** | Full albums in lossless quality, organized by artist. Stream through Jellyfin or your favorite music app. |
-| 📖 | **Books & Audiobooks** | Ebooks delivered to Kavita (read in your browser). Audiobooks in Audiobookshelf (with chapter support and progress sync). |
-| 🎮 | **Games** | Search and download PC games. Auto-imported to your library every 15 minutes. |
-| 🔒 | **VPN Protection** | Every download goes through an encrypted WireGuard tunnel. Kill switch blocks all traffic if the VPN drops. Your ISP sees nothing. |
+| 📖 | **Books & Audiobooks** | Ebooks managed by Kavita (read in your browser). Audiobooks in Audiobookshelf (with chapter support and progress sync). |
+| 🎮 | **Games** | Search and manage PC games. Auto-imported to your library every 15 minutes. |
+| 🔒 | **VPN Privacy** | All traffic routed through an encrypted WireGuard tunnel. Kill switch prevents unprotected connections. |
 | 🤖 | **Fully Automated** | Quality scoring picks the best release from dozens of options. Upgrades happen automatically when something better appears. Zero manual work. |
 
 ## 🚀 Get Started
@@ -49,7 +49,7 @@ That's it. The setup wizard walks you through VPN configuration, creates all dir
 | What | URL | For |
 |---|---|---|
 | 🎬 **Jellyfin** | `http://your-server:8096` | Watch movies, TV, listen to music |
-| 🔍 **Seerr** | `http://your-server:5055` | Request new content (share this with friends) |
+| 🔍 **Seerr** | `http://your-server:5055` | Request new media |
 
 That's all most people need. The other 13 services work behind the scenes.
 
@@ -88,7 +88,7 @@ The CLI features animated launch/shutdown sequences, color-coded service groups,
                     ▼
           ┌─── VPN Tunnel (WireGuard) ───┐
           │  Transmission  ·  SABnzbd    │
-          │  Kill switch · IP hidden     │
+          │  Kill switch · Network privacy │
           └──────────────────────────────┘
                     │
                     ▼
@@ -101,7 +101,7 @@ The CLI features animated launch/shutdown sequences, color-coded service groups,
 
 **Key architecture decisions:**
 - **Single mount** (`/data`) — downloads and media on the same filesystem so hardlinks work. A 50GB movie uses 50GB total, not 100GB.
-- **Split networking** — downloads go through VPN, streaming stays fast on the local network.
+- **Split networking** — download traffic goes through VPN, streaming stays fast on the local network.
 - **Quality scoring** — 48 custom formats in Radarr, 44 in Sonarr (from TRaSH Guides). Every release is scored and ranked automatically.
 
 > Deep dive into the architecture at **[arrbarr.com/docs](https://arrbarr.com/docs)** — interactive network topology, hardlink diagrams, quality pipeline, and more.
@@ -134,10 +134,10 @@ The CLI features animated launch/shutdown sequences, color-coded service groups,
 
 | Service | Role |
 |---|---|
-| **Radarr** | Movies — search, download, organize, upgrade |
+| **Radarr** | Movies — search, organize, upgrade |
 | **Sonarr** | TV shows — seasons, episodes, anime |
 | **Lidarr** | Music — albums, artists, lossless preferred |
-| **Bazarr** | Subtitles — auto-download, timing sync |
+| **Bazarr** | Subtitles — automatic matching, timing sync |
 
 </details>
 
@@ -156,7 +156,7 @@ The CLI features animated launch/shutdown sequences, color-coded service groups,
 
 | Service | Role |
 |---|---|
-| **LazyLibrarian** | Book & audiobook search and download |
+| **LazyLibrarian** | Book & audiobook library management |
 | **Kavita** | Ebook reader in the browser |
 | **Audiobookshelf** | Audiobook server with chapters, bookmarks, mobile apps |
 
@@ -167,7 +167,7 @@ The CLI features animated launch/shutdown sequences, color-coded service groups,
 
 | Service | Role |
 |---|---|
-| **QuestArr** | Game search and download via Prowlarr indexers |
+| **QuestArr** | Game library management via Prowlarr indexers |
 
 </details>
 
@@ -221,9 +221,13 @@ arr vpn             # Verify VPN is connected
 | **[arrbarr.com](https://arrbarr.com)** | Visual homepage, animated terminal demo |
 | **[The Guide](https://arrbarr.com/guide)** | Step-by-step setup for non-technical users |
 | **[The Crew](https://arrbarr.com/crew)** | Visual roster of all 15 services |
-| **[Costs](https://arrbarr.com/costs)** | Full cost breakdown vs streaming |
+| **[Costs](https://arrbarr.com/costs)** | Hardware and running cost breakdown |
 | **[Docs](https://arrbarr.com/docs)** | Technical reference, quality scoring, CLI guide |
 | **[learn/](./learn/)** | In-repo architecture docs with Mermaid diagrams |
+
+## ⚖️ Legal
+
+Every tool in this stack is 100% legal, open-source software designed for managing and automating personal media libraries. Users are responsible for ensuring their use complies with applicable laws in their jurisdiction. The VPN provides network privacy as a standard security practice.
 
 ---
 
