@@ -101,7 +101,8 @@ show_help() {
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req tv" "Search & add a TV show"
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req music" "Search & add an artist"
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req book" "Search & add a book"
-    printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req game" "Search & add a game"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "req game" "Search & add a game"
+    printf "  ${local_surface}└─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "--watch" "Follow your file's journey live"
     echo ""
 
     echo -e "  ${local_peach}${local_bold}Monitoring${local_reset}"
