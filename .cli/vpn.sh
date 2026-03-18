@@ -6,7 +6,7 @@ source "$CLI_DIR/common.sh"
 detect_docker
 require_env
 
-show_logo
+show_logo_static
 show_header "Arr Media Stack  —  VPN"
 
 # ── VPN Status ───────────────────────────────────────────────────────────────

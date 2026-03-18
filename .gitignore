@@ -1,3 +1,9 @@
+# Claude Code (agents, settings, memory)
+.claude/
+
+# LabIDE
+.labide/
+
 # Secrets
 .env
 

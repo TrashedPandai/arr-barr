@@ -42,14 +42,27 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     environment:
-      - VPN_SERVICE_PROVIDER=custom
+      # --- Provider selection (set in .env) ---
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
       - VPN_TYPE=wireguard
+      # --- Shared: all WireGuard providers need the private key ---
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_PUBLIC_KEY=${WIREGUARD_PUBLIC_KEY}
-      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESS}
-      - VPN_ENDPOINT_IP=${VPN_ENDPOINT_IP}
-      - VPN_ENDPOINT_PORT=${VPN_ENDPOINT_PORT}
+      # --- Named provider (e.g. protonvpn): server selection ---
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES:-}
+      # --- Custom provider: raw WireGuard config ---
+      - WIREGUARD_PUBLIC_KEY=${WIREGUARD_PUBLIC_KEY:-}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESS:-}
+      - VPN_ENDPOINT_IP=${VPN_ENDPOINT_IP:-}
+      - VPN_ENDPOINT_PORT=${VPN_ENDPOINT_PORT:-}
+      # --- Features ---
+      - VPN_PORT_FORWARDING=${VPN_PORT_FORWARDING:-off}
+      - VPN_PORT_FORWARDING_LISTENING_PORT=${VPN_PORT_FORWARDING_LISTENING_PORT:-}
+      # Auto-update Transmission's peer port when the forwarded port changes.
+      # Gluetun replaces {{PORTS}} with the actual forwarded port number.
+      - "VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'SID=$$(wget --server-response -qO /dev/null http://localhost:9091/transmission/rpc 2>&1 | grep -i \"X-Transmission-Session-Id:\" | head -1 | sed \"s/.*X-Transmission-Session-Id: //i\" | tr -d \"\\r\\n \"); wget -qO- --header=\"X-Transmission-Session-Id: $$SID\" --post-data=\"{\\\"method\\\":\\\"session-set\\\",\\\"arguments\\\":{\\\"peer-port\\\":{{PORTS}}}}\" http://localhost:9091/transmission/rpc'"
+      - WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL=${WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL:-}
       - FIREWALL_INPUT_PORTS=9091,8080
+      - DOT=off
       - DNS_ADDRESS=1.1.1.1
       - TZ=${TZ}
     ports:

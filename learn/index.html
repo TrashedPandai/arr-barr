@@ -3,1491 +3,1293 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>arr-barr — Learn</title>
+<title>arr-barr — Every Crew Needs a Port</title>
 <style>
-/* ══════════════════════════════════════════════
-   CATPPUCCIN MOCHA DESIGN TOKENS
-   ══════════════════════════════════════════════ */
-:root {
-  --crust:     #11111b;
-  --base:      #1e1e2e;
-  --mantle:    #181825;
-  --surface0:  #313244;
-  --surface1:  #45475a;
-  --surface2:  #585b70;
-  --overlay0:  #6c7086;
-  --overlay1:  #7f849c;
-  --subtext0:  #a6adc8;
-  --subtext1:  #bac2de;
-  --text:      #cdd6f4;
-  --lavender:  #b4befe;
-  --blue:      #89b4fa;
-  --sapphire:  #74c7ec;
-  --sky:       #89dceb;
-  --teal:      #94e2d5;
-  --green:     #a6e3a1;
-  --yellow:    #f9e2af;
-  --peach:     #fab387;
-  --maroon:    #eba0ac;
-  --red:       #f38ba8;
-  --mauve:     #cba6f7;
-  --pink:      #f5c2e7;
-  --flamingo:  #f2cdcd;
-  --rosewater: #f5e0dc;
-  --radius:    12px;
-  --radius-sm: 8px;
-  --glass:     rgba(30, 30, 46, 0.7);
-  --glass-border: rgba(69, 71, 90, 0.5);
-}
-
-/* ══════════════════════════════════════════════
-   RESET & BASE
-   ══════════════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html {
-  scroll-behavior: smooth;
-  font-size: 16px;
-  scrollbar-color: var(--surface2) var(--mantle);
-}
-
-body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: var(--base);
-  color: var(--text);
-  line-height: 1.7;
-  overflow-x: hidden;
-}
-
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--mantle); }
-::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
-
-a { color: var(--sapphire); text-decoration: none; transition: color 0.2s; }
-a:hover { color: var(--sky); }
-code {
-  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
-  background: var(--surface0);
-  padding: 2px 7px;
-  border-radius: 4px;
-  font-size: 0.88em;
-}
-
-/* ══════════════════════════════════════════════
-   NAVIGATION
-   ══════════════════════════════════════════════ */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-  background: rgba(17, 17, 27, 0.85);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--glass-border);
-  transition: box-shadow 0.3s;
-}
-nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
-
-.nav-inner {
-  max-width: 1200px; margin: 0 auto;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 2rem; height: 60px;
-}
-
-.nav-brand {
-  font-weight: 700; font-size: 1.1rem;
-  background: linear-gradient(135deg, var(--sapphire), var(--lavender));
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.nav-links { display: flex; gap: 0.25rem; }
-
-.nav-link {
-  padding: 0.5rem 1rem; border-radius: var(--radius-sm);
-  color: var(--subtext0); font-size: 0.9rem; font-weight: 500;
-  cursor: pointer; transition: all 0.2s; border: none; background: none;
-  font-family: inherit;
-}
-.nav-link:hover { color: var(--text); background: var(--surface0); }
-.nav-link.active {
-  color: var(--sapphire); background: rgba(116, 199, 236, 0.1);
-}
-
-.hamburger {
-  display: none; background: none; border: none; color: var(--text);
-  font-size: 1.5rem; cursor: pointer; padding: 0.5rem;
-}
-
-/* ══════════════════════════════════════════════
-   PAGE SYSTEM
-   ══════════════════════════════════════════════ */
-.page {
-  display: none; min-height: 100vh; padding-top: 60px;
-  opacity: 0; transition: opacity 0.4s ease;
-}
-.page.active { display: block; opacity: 1; }
-
-.container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
-
-/* ══════════════════════════════════════════════
-   LANDING PAGE — HERO
-   ══════════════════════════════════════════════ */
-.hero {
-  min-height: calc(100vh - 60px);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; padding: 4rem 2rem;
-  position: relative; overflow: hidden;
-}
-
-.hero::before {
-  content: ''; position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(116,199,236,0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 20% 80%, rgba(203,166,247,0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(137,180,250,0.06) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.hero-logo {
-  font-size: clamp(3rem, 8vw, 5.5rem);
-  font-weight: 800;
-  letter-spacing: -2px;
-  line-height: 1.1;
-  background: linear-gradient(135deg, var(--sapphire), var(--blue), var(--lavender), var(--mauve));
-  background-size: 300% 300%;
-  animation: gradientShift 8s ease infinite;
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
-  position: relative;
-}
-
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-.hero-tagline {
-  font-size: clamp(0.85rem, 2vw, 1rem);
-  color: var(--overlay1);
-  letter-spacing: 6px;
-  text-transform: uppercase;
-  margin-top: 0.5rem;
-  font-weight: 500;
-}
-
-.hero-desc {
-  font-size: clamp(1.05rem, 2.5vw, 1.25rem);
-  color: var(--subtext1);
-  max-width: 640px;
-  margin-top: 2rem;
-}
-
-.hero-cta {
-  display: flex; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap; justify-content: center;
-}
-
-.btn {
-  padding: 0.75rem 2rem; border-radius: var(--radius);
-  font-size: 0.95rem; font-weight: 600; cursor: pointer;
-  transition: all 0.25s; border: none; font-family: inherit;
-}
-.btn-primary {
-  background: linear-gradient(135deg, var(--sapphire), var(--blue));
-  color: var(--crust);
-}
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(116,199,236,0.3); }
-.btn-ghost {
-  background: transparent; color: var(--subtext0);
-  border: 1px solid var(--surface1);
-}
-.btn-ghost:hover { border-color: var(--sapphire); color: var(--sapphire); }
-
-/* ══════════════════════════════════════════════
-   STATS BAR
-   ══════════════════════════════════════════════ */
-.stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1.5rem; margin: 4rem auto; max-width: 900px; padding: 0 2rem;
-}
-
-.stat {
-  text-align: center; padding: 1.5rem 1rem;
-  background: var(--surface0); border-radius: var(--radius);
-  border: 1px solid var(--glass-border);
-  transition: transform 0.3s, border-color 0.3s;
-}
-.stat:hover { transform: translateY(-3px); border-color: var(--surface2); }
-
-.stat-num {
-  font-size: 2rem; font-weight: 800; line-height: 1;
-  background: linear-gradient(135deg, var(--sapphire), var(--lavender));
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.stat-label { font-size: 0.8rem; color: var(--overlay1); margin-top: 0.4rem; }
-
-/* ══════════════════════════════════════════════
-   FEATURE CARDS
-   ══════════════════════════════════════════════ */
-.section-title {
-  font-size: clamp(1.8rem, 4vw, 2.5rem);
-  font-weight: 700; text-align: center; margin-bottom: 0.5rem;
-}
-.section-sub {
-  text-align: center; color: var(--subtext0); margin-bottom: 3rem;
-  font-size: 1.05rem;
-}
-
-.features {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem; padding: 4rem 2rem; max-width: 1100px; margin: 0 auto;
-}
-
-.feature {
-  background: var(--surface0);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  padding: 2rem;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-}
-.feature::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--sapphire), var(--lavender));
-  opacity: 0; transition: opacity 0.3s;
-}
-.feature:hover { transform: translateY(-4px); border-color: var(--surface2); }
-.feature:hover::before { opacity: 1; }
-
-.feature-icon {
-  width: 48px; height: 48px; border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; margin-bottom: 1rem;
-}
-
-.feature h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
-.feature p { color: var(--subtext0); font-size: 0.92rem; }
-
-/* ══════════════════════════════════════════════
-   SERVICE TOPOLOGY (LANDING)
-   ══════════════════════════════════════════════ */
-.topology {
-  padding: 5rem 2rem; max-width: 1100px; margin: 0 auto;
-}
-
-.topo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 1rem; margin-top: 2rem;
-}
-
-.topo-node {
-  background: var(--surface0);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  padding: 1rem 0.75rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  position: relative;
-}
-.topo-node:hover {
-  transform: translateY(-3px);
-  border-color: var(--sapphire);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-}
-.topo-node.vpn-zone { border-color: rgba(243, 139, 168, 0.3); }
-.topo-node.vpn-zone:hover { border-color: var(--red); }
-
-.topo-icon { font-size: 1.6rem; margin-bottom: 0.3rem; }
-.topo-name { font-size: 0.82rem; font-weight: 600; }
-.topo-role { font-size: 0.72rem; color: var(--overlay1); margin-top: 0.15rem; }
-.topo-port {
-  font-size: 0.68rem; color: var(--overlay0);
-  font-family: 'SF Mono', monospace;
-  margin-top: 0.3rem;
-}
-
-.topo-zone-label {
-  grid-column: 1 / -1;
-  font-size: 0.75rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 2px;
-  padding: 0.75rem 0 0.25rem;
-  display: flex; align-items: center; gap: 0.75rem;
-}
-.topo-zone-label::after {
-  content: ''; flex: 1; height: 1px; background: var(--surface1);
-}
-
-/* ══════════════════════════════════════════════
-   GUIDE PAGE
-   ══════════════════════════════════════════════ */
-.guide-hero {
-  text-align: center; padding: 4rem 2rem 2rem;
-}
-.guide-hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; }
-.guide-hero p { color: var(--subtext0); margin-top: 0.5rem; font-size: 1.1rem; }
-
-.guide-nav {
-  display: flex; gap: 0.5rem; justify-content: center;
-  margin: 2rem 0; flex-wrap: wrap; padding: 0 1rem;
-}
-.guide-nav-btn {
-  padding: 0.5rem 1.25rem; border-radius: 99px;
-  border: 1px solid var(--surface1); background: transparent;
-  color: var(--subtext0); cursor: pointer; font-family: inherit;
-  font-size: 0.88rem; transition: all 0.2s;
-}
-.guide-nav-btn:hover, .guide-nav-btn.active {
-  border-color: var(--sapphire); color: var(--sapphire);
-  background: rgba(116,199,236,0.08);
-}
-
-.guide-section { display: none; padding: 2rem; max-width: 800px; margin: 0 auto; }
-.guide-section.active { display: block; animation: fadeUp 0.4s ease; }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Timeline */
-.timeline { position: relative; padding-left: 2.5rem; }
-.timeline::before {
-  content: ''; position: absolute; left: 12px; top: 0; bottom: 0;
-  width: 2px; background: var(--surface1);
-}
-
-.step {
-  position: relative; margin-bottom: 2rem;
-  padding: 1.5rem; background: var(--surface0);
-  border-radius: var(--radius); border: 1px solid var(--glass-border);
-}
-.step::before {
-  content: attr(data-step); position: absolute;
-  left: -2.5rem; top: 1.5rem; width: 26px; height: 26px;
-  background: var(--sapphire); color: var(--crust);
-  border-radius: 50%; font-size: 0.75rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-}
-
-.step h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
-.step p { color: var(--subtext0); font-size: 0.92rem; }
-
-.cmd-block {
-  background: var(--mantle); border: 1px solid var(--surface0);
-  border-radius: var(--radius-sm); padding: 1rem 1.25rem;
-  margin: 0.75rem 0; font-family: 'SF Mono', monospace;
-  font-size: 0.88rem; color: var(--green);
-  display: flex; justify-content: space-between; align-items: center;
-  overflow-x: auto;
-}
-.cmd-block .copy-btn {
-  background: none; border: none; color: var(--overlay0);
-  cursor: pointer; font-size: 0.85rem; padding: 0.25rem 0.5rem;
-  border-radius: 4px; transition: all 0.2s; flex-shrink: 0;
-  font-family: inherit;
-}
-.cmd-block .copy-btn:hover { color: var(--sapphire); background: var(--surface0); }
-
-/* Command reference cards */
-.cmd-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem; margin-top: 1rem;
-}
-
-.cmd-card {
-  background: var(--surface0); border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm); padding: 1rem 1.25rem;
-  transition: border-color 0.2s;
-}
-.cmd-card:hover { border-color: var(--surface2); }
-
-.cmd-name {
-  font-family: 'SF Mono', monospace; font-weight: 600;
-  color: var(--green); font-size: 0.92rem;
-}
-.cmd-desc { font-size: 0.85rem; color: var(--subtext0); margin-top: 0.25rem; }
-.cmd-alias {
-  font-size: 0.75rem; color: var(--overlay0);
-  font-family: 'SF Mono', monospace; margin-top: 0.35rem;
-}
-
-/* ══════════════════════════════════════════════
-   ARCHITECTURE PAGE
-   ══════════════════════════════════════════════ */
-.arch-hero {
-  text-align: center; padding: 4rem 2rem 2rem;
-}
-.arch-hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; }
-
-.arch-section {
-  max-width: 1000px; margin: 3rem auto; padding: 0 2rem;
-}
-.arch-section h2 {
-  font-size: 1.6rem; margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--surface1);
-}
-.arch-section h3 {
-  font-size: 1.15rem; margin: 1.5rem 0 0.75rem;
-  color: var(--lavender);
-}
-
-/* Interactive flow diagram */
-.flow-diagram {
-  display: flex; flex-direction: column; gap: 0;
-  margin: 2rem 0;
-}
-
-.flow-step {
-  display: flex; align-items: stretch; gap: 1rem;
-  opacity: 0; transform: translateX(-20px);
-  transition: all 0.5s ease;
-}
-.flow-step.visible { opacity: 1; transform: translateX(0); }
-
-.flow-line {
-  width: 3px; background: var(--surface1);
-  flex-shrink: 0; position: relative;
-  margin-left: 1.25rem;
-}
-.flow-line::before {
-  content: ''; position: absolute; top: 0; left: -5px;
-  width: 13px; height: 13px; border-radius: 50%;
-  border: 2px solid var(--sapphire); background: var(--base);
-}
-
-.flow-content {
-  background: var(--surface0);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
-  margin: 0.5rem 0;
-  flex: 1;
-  transition: border-color 0.3s;
-}
-.flow-content:hover { border-color: var(--sapphire); }
-
-.flow-label {
-  font-size: 0.72rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 1.5px;
-  margin-bottom: 0.4rem;
-}
-.flow-content h4 { font-size: 1rem; margin-bottom: 0.3rem; }
-.flow-content p { font-size: 0.88rem; color: var(--subtext0); }
-
-/* Expandable detail cards */
-.detail-card {
-  background: var(--surface0);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  margin-bottom: 0.75rem;
-  overflow: hidden;
-  transition: border-color 0.2s;
-}
-.detail-card:hover { border-color: var(--surface2); }
-
-.detail-header {
-  padding: 1rem 1.5rem;
-  cursor: pointer;
-  display: flex; justify-content: space-between; align-items: center;
-  user-select: none; transition: background 0.2s;
-}
-.detail-header:hover { background: rgba(69, 71, 90, 0.3); }
-
-.detail-header h4 { font-size: 1rem; display: flex; align-items: center; gap: 0.75rem; }
-.detail-chevron {
-  transition: transform 0.3s; color: var(--overlay0); font-size: 0.9rem;
-}
-.detail-card.open .detail-chevron { transform: rotate(180deg); }
-
-.detail-body {
-  max-height: 0; overflow: hidden;
-  transition: max-height 0.4s ease, padding 0.3s;
-}
-.detail-card.open .detail-body {
-  max-height: 2000px; padding: 0 1.5rem 1.25rem;
-}
-.detail-body p { font-size: 0.9rem; color: var(--subtext0); margin-bottom: 0.5rem; }
-.detail-body ul { padding-left: 1.25rem; color: var(--subtext0); font-size: 0.9rem; }
-.detail-body li { margin-bottom: 0.25rem; }
-
-/* Network zone diagram */
-.zone-diagram {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 1rem; margin: 2rem 0;
-}
-
-.zone {
-  border-radius: var(--radius); padding: 1.5rem;
-  border: 1px solid var(--glass-border);
-  text-align: center;
-}
-.zone h4 {
-  font-size: 0.85rem; text-transform: uppercase;
-  letter-spacing: 1.5px; margin-bottom: 1rem;
-}
-.zone-services {
-  display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
-}
-.zone-chip {
-  padding: 0.3rem 0.7rem; border-radius: 99px;
-  font-size: 0.75rem; font-weight: 500;
-}
-
-.zone-vpn { background: rgba(243,139,168,0.08); border-color: rgba(243,139,168,0.3); }
-.zone-vpn h4 { color: var(--red); }
-.zone-vpn .zone-chip { background: rgba(243,139,168,0.12); color: var(--red); }
-
-.zone-bridge { background: rgba(137,180,250,0.05); border-color: rgba(137,180,250,0.2); }
-.zone-bridge h4 { color: var(--blue); }
-.zone-bridge .zone-chip { background: rgba(137,180,250,0.1); color: var(--blue); }
-
-.zone-host { background: rgba(166,227,161,0.05); border-color: rgba(166,227,161,0.2); }
-.zone-host h4 { color: var(--green); }
-.zone-host .zone-chip { background: rgba(166,227,161,0.1); color: var(--green); }
-
-/* Scoring demo */
-.scoring-demo {
-  background: var(--mantle);
-  border: 1px solid var(--surface0);
-  border-radius: var(--radius);
-  padding: 1.5rem; margin: 1.5rem 0;
-}
-
-.score-release {
-  padding: 1rem; margin-bottom: 0.75rem;
-  background: var(--surface0);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--surface2);
-  transition: border-color 0.3s;
-  cursor: pointer;
-}
-.score-release:hover { border-left-color: var(--sapphire); }
-.score-release.rejected { border-left-color: var(--red); }
-.score-release.winner { border-left-color: var(--green); }
-
-.score-name { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: var(--text); }
-.score-cfs { margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.score-cf {
-  padding: 0.2rem 0.6rem; border-radius: 99px;
-  font-size: 0.72rem; font-weight: 600;
-}
-.cf-pos { background: rgba(166,227,161,0.12); color: var(--green); }
-.cf-neg { background: rgba(243,139,168,0.12); color: var(--red); }
-.cf-tag { background: rgba(137,180,250,0.1); color: var(--blue); }
-
-.score-total {
-  margin-top: 0.5rem; font-size: 0.85rem; font-weight: 700;
-}
-.score-total.positive { color: var(--green); }
-.score-total.negative { color: var(--red); }
-
-/* Hardlink diagram */
-.hardlink-visual {
-  display: grid; grid-template-columns: 1fr auto 1fr;
-  gap: 1rem; align-items: center; margin: 2rem 0;
-  padding: 2rem; background: var(--surface0);
-  border-radius: var(--radius); border: 1px solid var(--glass-border);
-}
-
-.hl-box {
-  padding: 1.25rem; border-radius: var(--radius-sm);
-  text-align: center;
-}
-.hl-box h5 {
-  font-size: 0.78rem; text-transform: uppercase;
-  letter-spacing: 1px; margin-bottom: 0.5rem;
-}
-.hl-box p { font-family: 'SF Mono', monospace; font-size: 0.78rem; word-break: break-all; }
-
-.hl-downloads { background: rgba(137,180,250,0.08); border: 1px solid rgba(137,180,250,0.2); }
-.hl-downloads h5 { color: var(--blue); }
-.hl-media { background: rgba(166,227,161,0.08); border: 1px solid rgba(166,227,161,0.2); }
-.hl-media h5 { color: var(--green); }
-
-.hl-arrow {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 0.3rem; color: var(--peach);
-}
-.hl-arrow-line { font-size: 1.5rem; }
-.hl-arrow-text {
-  font-size: 0.7rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 1px;
-}
-
-/* ══════════════════════════════════════════════
-   FOOTER
-   ══════════════════════════════════════════════ */
-footer {
-  text-align: center; padding: 3rem 2rem;
-  border-top: 1px solid var(--surface0);
-  color: var(--overlay0); font-size: 0.85rem;
-  margin-top: 4rem;
-}
-
-/* ══════════════════════════════════════════════
-   RESPONSIVE
-   ══════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  .nav-links { display: none; }
-  .nav-links.open {
-    display: flex; flex-direction: column;
-    position: absolute; top: 60px; left: 0; right: 0;
-    background: var(--crust); border-bottom: 1px solid var(--surface0);
-    padding: 0.5rem;
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  /* ═══ Reset ═══ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:        #0a0e1a;
+    --bg-alt:    #0f1629;
+    --surface:   #131a2e;
+    --surface1:  #1a2340;
+    --surface2:  #1e293b;
+    --border:    #1e293b;
+    --border-h:  #334155;
+    --text:      #e0e6f0;
+    --text-dim:  #94a3b8;
+    --text-muted:#64748b;
+    --indigo:    #818cf8;
+    --purple:    #c084fc;
+    --pink:      #f472b6;
+    --cyan:      #22d3ee;
+    --sky:       #7dd3fc;
+    --teal:      #2dd4bf;
+    --green:     #4ade80;
+    --emerald:   #10b981;
+    --lime:      #a3e635;
+    --yellow:    #fbbf24;
+    --amber:     #f59e0b;
+    --orange:    #fb923c;
+    --red:       #f87171;
+    --rose:      #fb7185;
   }
-  .hamburger { display: block; }
-  .zone-diagram { grid-template-columns: 1fr; }
-  .hardlink-visual { grid-template-columns: 1fr; }
-  .hl-arrow { transform: rotate(90deg); padding: 0.5rem; }
-  .topo-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
-}
 
-/* ══════════════════════════════════════════════
-   UTILITIES
-   ══════════════════════════════════════════════ */
-.accent-sapphire { color: var(--sapphire); }
-.accent-red { color: var(--red); }
-.accent-green { color: var(--green); }
-.accent-peach { color: var(--peach); }
-.accent-mauve { color: var(--mauve); }
-.accent-yellow { color: var(--yellow); }
-.mt-1 { margin-top: 0.5rem; }
-.mt-2 { margin-top: 1rem; }
-.mt-4 { margin-top: 2rem; }
-.mb-4 { margin-bottom: 2rem; }
-.text-dim { color: var(--subtext0); }
-.text-sm { font-size: 0.88rem; }
-.text-center { text-align: center; }
-.grid-2 {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
-}
-@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-h); border-radius: 3px; }
+
+  a { color: var(--sky); text-decoration: none; }
+  a:hover { color: var(--cyan); }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.82em;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.2);
+    color: var(--cyan);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  /* ═══ Nav ═══ */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(10, 14, 26, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(30,41,59,0.6);
+    transition: box-shadow 0.3s;
+  }
+  nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
+
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 56px;
+  }
+  .nav-brand {
+    font-weight: 800; font-size: 1.1rem;
+    background: linear-gradient(135deg, var(--indigo), var(--purple));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link {
+    padding: 7px 16px; border-radius: 8px;
+    color: var(--text-dim); font-size: 0.88rem; font-weight: 500;
+    cursor: pointer; border: none; background: none;
+    font-family: inherit; transition: all 0.2s;
+  }
+  .nav-link:hover { color: var(--text); background: var(--surface); }
+  .nav-link.active { color: var(--indigo); background: rgba(99,102,241,0.1); }
+  .hamburger { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; padding: 6px; }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .nav-links.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #080c16; border-bottom: 1px solid var(--border);
+      padding: 8px;
+    }
+    .hamburger { display: block; }
+  }
+
+  /* ═══ Side Rail ═══ */
+  .side-rail {
+    position: fixed; right: 16px; top: 50%;
+    transform: translateY(-50%);
+    z-index: 900;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .side-rail.visible { opacity: 1; pointer-events: auto; }
+  .rail-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(212,160,74,0.15);
+    border: 1px solid rgba(212,160,74,0.25);
+    cursor: pointer; transition: all 0.3s;
+    position: relative;
+  }
+  .rail-dot:hover { background: rgba(212,160,74,0.35); transform: scale(1.3); }
+  .rail-dot.active { background: rgba(212,160,74,0.5); border-color: rgba(212,160,74,0.6); }
+  .rail-dot::before {
+    content: attr(data-label);
+    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    font-size: 0.65rem; color: rgba(212,160,74,0.5);
+    white-space: nowrap; opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  .rail-dot:hover::before { opacity: 1; }
+  .rail-sep { width: 1px; height: 12px; background: rgba(212,160,74,0.08); }
+  .rail-top {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(212,160,74,0.08);
+    border: 1px solid rgba(212,160,74,0.15);
+    color: rgba(212,160,74,0.5);
+    font-size: 0.7rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s; margin-top: 4px;
+  }
+  .rail-top:hover {
+    background: rgba(212,160,74,0.2);
+    border-color: rgba(212,160,74,0.4);
+    color: #d4a04a;
+    transform: scale(1.1);
+  }
+  @media (max-width: 768px) { .side-rail { display: none; } }
+
+  /* ═══ Page System ═══ */
+  .page { display: none; padding-top: 56px; }
+  .page.active { display: block; }
+
+  /* ═══ HERO ═══ */
+  .hero {
+    text-align: center; padding: 100px 20px 80px;
+    background: linear-gradient(180deg, #060d1f 0%, #0a1228 40%, var(--bg) 100%);
+    position: relative; overflow: hidden;
+  }
+  /* deep ocean glow */
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 10%, rgba(56,100,180,0.14) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 25% 70%, rgba(99,102,241,0.13) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 75% 70%, rgba(45,212,191,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  /* compass rose */
+  .compass-wrap {
+    position: absolute; top: 50%; left: 50%;
+    width: min(88vw, 620px); height: min(88vw, 620px);
+    transform: translate(-50%, -52%);
+    pointer-events: none;
+    animation: compassSpin 180s linear infinite;
+  }
+  .compass-wrap svg { width: 100%; height: 100%; }
+  @keyframes compassSpin { to { transform: translate(-50%, -52%) rotate(360deg); } }
+
+  /* side embellishments */
+  .hero-side {
+    position: absolute; top: 15%; bottom: 15%;
+    width: 30px; pointer-events: none;
+  }
+  .hero-side.left { left: 24px; }
+  .hero-side.right { right: 24px; }
+  .hero-side svg { width: 100%; height: 100%; }
+  @media (max-width: 768px) { .hero-side { display: none; } }
+
+  .hero h1 {
+    font-size: clamp(2.8rem, 8vw, 4.2rem); font-weight: 800;
+    background: linear-gradient(135deg, #7aa2f7, var(--indigo), var(--purple), #c084fc);
+    background-size: 300% 300%; animation: grad 8s ease infinite;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; position: relative;
+    letter-spacing: -1px;
+  }
+  @keyframes grad { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  .hero-tag {
+    font-size: 0.82rem; color: rgba(125,211,252,0.5);
+    letter-spacing: 5px; text-transform: uppercase; margin-top: 6px; font-weight: 500;
+    position: relative;
+  }
+  .hero-cta {
+    display: flex; gap: 12px; justify-content: center;
+    margin-top: 32px; flex-wrap: wrap; position: relative;
+  }
+
+  /* ═══ Hero Terminal ═══ */
+  .hero-term {
+    position: relative;
+    max-width: 520px; margin: 28px auto 0;
+    background: #080c16;
+    border: 1px solid rgba(99,102,241,0.15);
+    border-radius: 10px; overflow: hidden;
+    text-align: left;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+  .term-bar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px;
+    background: rgba(15,22,41,0.8);
+    border-bottom: 1px solid rgba(30,41,59,0.6);
+  }
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .term-dot.red { background: #f87171; }
+  .term-dot.yellow { background: #fbbf24; }
+  .term-dot.green { background: #4ade80; }
+  .term-title {
+    margin-left: auto; font-size: 0.68rem; color: var(--text-muted);
+    font-family: 'SF Mono', 'Fira Code', monospace; letter-spacing: 0.5px;
+  }
+  .term-body {
+    padding: 14px 16px; height: 180px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 0.78rem; line-height: 1.65;
+    color: var(--text-dim); overflow: hidden;
+  }
+  .term-body .t-prompt { color: var(--amber); }
+  .term-body .t-cmd { color: #e0e6f0; }
+  .term-body .t-dim { color: var(--text-muted); }
+  .term-body .t-green { color: var(--green); }
+  .term-body .t-cyan { color: var(--cyan); }
+  .term-body .t-amber { color: var(--amber); }
+  .term-body .t-line { margin: 2px 0; min-height: 1.65em; }
+  .term-cursor {
+    display: inline-block; width: 7px; height: 14px;
+    background: var(--amber); vertical-align: text-bottom;
+    animation: blink 1s step-end infinite; margin-left: 1px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+
+  /* animated wave separator */
+  .hero-wave {
+    position: absolute; bottom: -2px; left: 0; width: 100%; height: 60px;
+    overflow: hidden;
+  }
+  .hero-wave svg { position: absolute; bottom: 0; width: 200%; height: 100%; animation: waveDrift 10s linear infinite; }
+  @keyframes waveDrift { to { transform: translateX(-50%); } }
+  .btn {
+    padding: 10px 28px; border-radius: 10px; font-size: 0.92rem;
+    font-weight: 600; cursor: pointer; border: none;
+    font-family: inherit; transition: all 0.25s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #d4a04a, #b8860b);
+    color: #1a1204;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212,160,74,0.3); }
+  .btn-ghost {
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--border-h);
+  }
+  .btn-ghost:hover { border-color: rgba(212,160,74,0.6); color: #d4a04a; }
+
+  /* ═══ FLOW DIAGRAM (from reference) ═══ */
+  .diagram-container { max-width: 1000px; margin: 0 auto; padding: 20px 24px 60px; }
+  .section-header { text-align: center; padding: 50px 24px 10px; max-width: 900px; margin: 0 auto; }
+  .section-title { font-size: clamp(1.5rem, 4vw, 1.9rem); font-weight: 700; color: #f1f5f9; }
+  .section-desc { color: var(--text-dim); font-size: 1rem; line-height: 1.7; margin-top: 10px; }
+
+  .flow-diagram { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  .flow-arrow { display: flex; flex-direction: column; align-items: center; padding: 6px 0; }
+  .flow-arrow .line { width: 3px; height: 28px; background: linear-gradient(180deg, #475569, #334155); }
+  .flow-arrow .label {
+    font-size: 0.72rem; color: #e2e8f0; font-weight: 500;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 4px 14px; background: #334155;
+    border-radius: 12px; border: 1px solid #475569;
+  }
+  .flow-arrow .triangle {
+    width: 0; height: 0;
+    border-left: 7px solid transparent; border-right: 7px solid transparent;
+    border-top: 9px solid #475569;
+  }
+
+  /* Layer cards */
+  .layer {
+    width: 100%; max-width: 880px; border-radius: 16px;
+    padding: 26px; position: relative; overflow: hidden;
+  }
+  .layer::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .layer-title {
+    font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px;
+  }
+  .layer-subtitle { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 18px; }
+
+  /* Layer: Request */
+  .layer-request {
+    background: linear-gradient(135deg, #1a1a2e, var(--surface2));
+    border: 1px solid rgba(124,58,237,0.25); text-align: center; max-width: 480px;
+  }
+  .layer-request::before { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+  .layer-request .layer-title { color: #c4b5fd; }
+  .request-app {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.22);
+    padding: 12px 24px; border-radius: 12px;
+  }
+  .request-app .icon { font-size: 1.5rem; }
+  .request-app .name { font-weight: 600; color: #c4b5fd; font-size: 1.05rem; }
+  .request-app .rdesc { font-size: 0.78rem; color: var(--text-dim); }
+
+  /* Layer: Brains */
+  .layer-brains {
+    background: linear-gradient(135deg, #0f172a, var(--surface2));
+    border: 1px solid rgba(14,165,233,0.2);
+  }
+  .layer-brains::before { background: linear-gradient(90deg, #22d3ee, #0ea5e9); }
+  .layer-brains .layer-title { color: #67e8f9; }
+  .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .app-card {
+    background: rgba(14,165,233,0.05); border: 1px solid rgba(14,165,233,0.12);
+    border-radius: 12px; padding: 14px 10px; text-align: center;
+    transition: all 0.3s;
+  }
+  .app-card:hover { background: rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.25); transform: translateY(-2px); }
+  .app-card .icon { font-size: 1.6rem; margin-bottom: 4px; line-height: 1; }
+  .app-card .icon img { width: 28px; height: 28px; border-radius: 6px; }
+  .app-card .name { font-weight: 600; font-size: 0.85rem; color: #e0f2fe; }
+  .app-card .role { font-size: 0.7rem; color: #7dd3fc; margin-top: 2px; }
+
+  /* Layer: Search */
+  .layer-search {
+    background: linear-gradient(135deg, #1a1a2e, var(--surface2));
+    border: 1px solid rgba(245,158,11,0.2); text-align: center; max-width: 580px;
+  }
+  .layer-search::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+  .layer-search .layer-title { color: #fcd34d; }
+  .search-row { display: flex; justify-content: center; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .search-item {
+    background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.18);
+    border-radius: 12px; padding: 12px 18px; text-align: center;
+  }
+  .search-item .icon { font-size: 1.3rem; margin-bottom: 2px; }
+  .search-item .name { font-weight: 600; font-size: 0.88rem; color: #fde68a; }
+  .search-item .sdesc { font-size: 0.7rem; color: var(--text-dim); }
+  .search-plus { font-size: 1.4rem; color: #475569; font-weight: 300; }
+
+  /* Layer: VPN */
+  .layer-vpn {
+    background: linear-gradient(135deg, #042f1c 0%, #0a1f1a 50%, #0f172a 100%);
+    border: 2px solid var(--emerald); position: relative;
+    box-shadow: 0 0 40px rgba(16,185,129,0.08), inset 0 0 40px rgba(16,185,129,0.02);
+  }
+  .layer-vpn::before { background: linear-gradient(90deg, #34d399, #10b981, #059669); height: 4px; }
+  .layer-vpn .layer-title { color: #6ee7b7; }
+  .vpn-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25);
+    padding: 5px 14px; border-radius: 20px; font-size: 0.78rem;
+    font-weight: 600; color: #6ee7b7; margin-bottom: 14px;
+  }
+  .vpn-badge .dot {
+    width: 8px; height: 8px; background: var(--emerald);
+    border-radius: 50%; animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+    50% { opacity:0.8; box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+  }
+  .vpn-clients { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+  .vpn-client {
+    background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.12);
+    border-radius: 12px; padding: 18px; text-align: center;
+  }
+  .vpn-client .icon { font-size: 1.8rem; margin-bottom: 4px; }
+  .vpn-client .name { font-weight: 600; color: #a7f3d0; font-size: 0.95rem; }
+  .vpn-client .type { font-size: 0.78rem; color: #6ee7b7; margin-top: 2px; }
+  .vpn-client .detail { font-size: 0.7rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+  .shield-row { display: flex; justify-content: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .shield-tag {
+    font-size: 0.7rem; font-weight: 500; color: #6ee7b7;
+    background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.18);
+    padding: 3px 10px; border-radius: 8px;
+  }
+
+  /* Layer: Storage */
+  .layer-storage {
+    background: linear-gradient(135deg, #1e1b2e, var(--surface2));
+    border: 1px solid rgba(244,114,182,0.2);
+  }
+  .layer-storage::before { background: linear-gradient(90deg, #fb7185, #f472b6); }
+  .layer-storage .layer-title { color: #fda4af; }
+  .storage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+  .storage-folder {
+    background: rgba(244,114,182,0.04); border: 1px solid rgba(244,114,182,0.12);
+    border-radius: 10px; padding: 12px 8px; text-align: center;
+  }
+  .storage-folder .icon { font-size: 1.3rem; margin-bottom: 2px; }
+  .storage-folder .name { font-weight: 600; font-size: 0.82rem; color: #fecdd3; }
+  .storage-folder .path { font-size: 0.62rem; color: var(--text-muted); font-family: monospace; }
+
+  /* Layer: Players */
+  .layer-players {
+    background: linear-gradient(135deg, #1e1b4b, var(--surface2));
+    border: 1px solid rgba(129,140,248,0.2);
+  }
+  .layer-players::before { background: linear-gradient(90deg, #a78bfa, var(--indigo)); }
+  .layer-players .layer-title { color: #c4b5fd; }
+  .player-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .player-card {
+    background: rgba(129,140,248,0.05); border: 1px solid rgba(129,140,248,0.12);
+    border-radius: 12px; padding: 14px; text-align: center; position: relative;
+  }
+  .player-card .icon { font-size: 1.4rem; margin-bottom: 3px; }
+  .player-card .name { font-weight: 600; font-size: 0.88rem; color: #e0e7ff; }
+  .player-card .alt { font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; font-style: italic; }
+
+  /* ═══ CTA Section ═══ */
+  .cta-section { max-width: 800px; margin: 0 auto; padding: 40px 24px 60px; }
+  .cta-card {
+    background: linear-gradient(135deg, #1a1033, var(--surface2));
+    border: 1px solid rgba(99,102,241,0.3); border-radius: 20px;
+    padding: 40px; text-align: center; position: relative; overflow: hidden;
+  }
+  .cta-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--indigo), var(--purple), var(--pink));
+  }
+  .cta-card h2 { font-size: 1.6rem; color: #c4b5fd; margin-bottom: 8px; }
+  .cta-card p { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 24px; max-width: 500px; margin-left: auto; margin-right: auto; }
+  .cta-card .btn-primary { padding: 14px 40px; font-size: 1rem; }
+
+
+  /* ═══ Security Callout ═══ */
+  .security-section { max-width: 900px; margin: 0 auto; padding: 50px 24px; }
+  .security-card {
+    background: linear-gradient(135deg, #042f1c, #0a1f1a);
+    border: 1px solid rgba(16,185,129,0.25); border-radius: 20px;
+    padding: 36px; position: relative; overflow: hidden;
+  }
+  .security-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7);
+  }
+  .security-card h2 { font-size: 1.4rem; color: #6ee7b7; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+  .sec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .sec-item { display: flex; gap: 10px; align-items: flex-start; }
+  .sec-item .check { font-size: 1.1rem; color: var(--emerald); flex-shrink: 0; margin-top: 2px; }
+  .sec-item h4 { font-size: 0.88rem; color: #a7f3d0; font-weight: 600; }
+  .sec-item p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin-top: 2px; }
+  @media (max-width: 640px) { .sec-grid { grid-template-columns: 1fr; } }
+
+  /* ═══ GUIDE PAGE ═══ */
+  .page-header { text-align: center; padding: 50px 24px 20px; }
+  .page-header h1 {
+    font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 700;
+    background: linear-gradient(135deg, var(--indigo), var(--purple));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .page-header p { color: var(--text-dim); font-size: 1.05rem; margin-top: 6px; }
+
+  .guide-tabs {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    padding: 0 16px; margin-bottom: 24px;
+  }
+  .tab-btn {
+    padding: 7px 18px; border-radius: 99px;
+    border: 1px solid var(--border-h); background: transparent;
+    color: var(--text-dim); cursor: pointer; font-family: inherit;
+    font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+  }
+  .tab-btn:hover, .tab-btn.active {
+    border-color: var(--indigo); color: var(--indigo);
+    background: rgba(99,102,241,0.16);
+  }
+  .tab-panel { display: none; max-width: 780px; margin: 0 auto; padding: 0 24px 60px; animation: fadeIn 0.35s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 40px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 14px; top: 0; bottom: 0;
+    width: 2px; background: var(--border-h);
+  }
+  .step {
+    position: relative; margin-bottom: 24px;
+    padding: 18px 20px; background: var(--surface);
+    border-radius: 14px; border: 1px solid var(--border);
+  }
+  .step::before {
+    content: attr(data-step); position: absolute;
+    left: -40px; top: 18px; width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--indigo), #6366f1);
+    color: #fff; border-radius: 50%; font-size: 0.75rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step h3 { font-size: 1rem; margin-bottom: 4px; }
+  .step p { color: var(--text-dim); font-size: 0.9rem; }
+
+  .cmd-block {
+    background: #080c16; border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; margin: 8px 0;
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem;
+    color: var(--green); display: flex; justify-content: space-between;
+    align-items: center; overflow-x: auto;
+  }
+  .copy-btn {
+    background: none; border: none; color: var(--text-muted);
+    cursor: pointer; font-size: 0.82rem; padding: 3px 8px;
+    border-radius: 4px; transition: all 0.2s; font-family: inherit; flex-shrink: 0;
+  }
+  .copy-btn:hover { color: var(--indigo); background: var(--surface); }
+
+  /* Command cards */
+  .cmd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+  .cmd-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; transition: border-color 0.2s;
+  }
+  .cmd-card:hover { border-color: var(--border-h); }
+  .cmd-name { font-family: 'SF Mono', monospace; font-weight: 600; color: var(--green); font-size: 0.88rem; }
+  .cmd-desc { font-size: 0.82rem; color: var(--text-dim); margin-top: 2px; }
+  .cmd-alias { font-size: 0.72rem; color: var(--text-muted); font-family: monospace; margin-top: 4px; }
+
+  /* Expand cards */
+  .expand { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+  .expand:hover { border-color: var(--border-h); }
+  .expand-head {
+    padding: 14px 18px; cursor: pointer; display: flex;
+    justify-content: space-between; align-items: center;
+    user-select: none; transition: background 0.2s;
+  }
+  .expand-head:hover { background: rgba(30,41,59,0.5); }
+  .expand-head h4 { font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+  .chevron { transition: transform 0.3s; color: var(--text-muted); font-size: 0.85rem; }
+  .expand.open .chevron { transform: rotate(180deg); }
+  .expand-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s; }
+  .expand.open .expand-body { max-height: 1500px; padding: 0 18px 16px; }
+  .expand-body p { font-size: 0.88rem; color: var(--text-dim); margin-bottom: 5px; }
+
+  /* ═══ DEEP DIVE PAGE ═══ */
+  .arch-section { max-width: 960px; margin: 0 auto; padding: 0 24px; margin-bottom: 48px; }
+  .arch-section h2 {
+    font-size: 1.4rem; margin-bottom: 14px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .arch-section h3 { font-size: 1.05rem; margin: 18px 0 10px; color: #c4b5fd; }
+
+  /* Zones */
+  .zone-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+  .zone { border-radius: 14px; padding: 20px; border: 1px solid var(--border); text-align: center; }
+  .zone h4 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .zone-chips { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+  .zone-chip { padding: 3px 9px; border-radius: 99px; font-size: 0.72rem; font-weight: 500; }
+  .z-vpn { background: rgba(248,113,113,0.06); border-color: rgba(248,113,113,0.2); }
+  .z-vpn h4 { color: var(--red); }
+  .z-vpn .zone-chip { background: rgba(248,113,113,0.1); color: var(--red); }
+  .z-bridge { background: rgba(99,102,241,0.16); border-color: rgba(99,102,241,0.15); }
+  .z-bridge h4 { color: var(--indigo); }
+  .z-bridge .zone-chip { background: rgba(99,102,241,0.16); color: var(--indigo); }
+  .z-host { background: rgba(74,222,128,0.04); border-color: rgba(74,222,128,0.15); }
+  .z-host h4 { color: var(--green); }
+  .z-host .zone-chip { background: rgba(74,222,128,0.08); color: var(--green); }
+  @media (max-width: 640px) { .zone-grid { grid-template-columns: 1fr; } }
+
+  /* Hardlink viz */
+  .hl-viz {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px;
+    align-items: center; margin: 20px 0; padding: 24px;
+    background: var(--surface); border-radius: 14px; border: 1px solid var(--border);
+  }
+  .hl-box { padding: 16px; border-radius: 10px; text-align: center; }
+  .hl-box h5 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+  .hl-box p { font-family: monospace; font-size: 0.75rem; word-break: break-all; }
+  .hl-dl { background: rgba(99,102,241,0.13); border: 1px solid rgba(99,102,241,0.15); }
+  .hl-dl h5 { color: var(--indigo); }
+  .hl-lib { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.15); }
+  .hl-lib h5 { color: var(--green); }
+  .hl-arrow { text-align: center; color: var(--amber); }
+  .hl-arrow-icon { font-size: 1.6rem; }
+  .hl-arrow-text { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  @media (max-width: 640px) { .hl-viz { grid-template-columns: 1fr; } .hl-arrow { transform: rotate(90deg); padding: 8px; } }
+
+  /* Score demo */
+  .score-demo { background: #080c16; border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin: 14px 0; }
+  .score-rel {
+    padding: 12px; margin-bottom: 8px; background: var(--surface);
+    border-radius: 10px; border-left: 3px solid var(--border-h);
+  }
+  .score-rel.win { border-left-color: var(--green); }
+  .score-rel.rej { border-left-color: var(--red); }
+  .score-name { font-family: monospace; font-size: 0.82rem; }
+  .score-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .stag { padding: 2px 8px; border-radius: 99px; font-size: 0.7rem; font-weight: 600; }
+  .stag-pos { background: rgba(74,222,128,0.1); color: var(--green); }
+  .stag-neg { background: rgba(248,113,113,0.1); color: var(--red); }
+  .stag-tag { background: rgba(99,102,241,0.16); color: var(--sky); }
+  .score-total { margin-top: 5px; font-size: 0.82rem; font-weight: 700; }
+  .score-total.pos { color: var(--green); }
+  .score-total.neg { color: var(--red); }
+
+  /* ═══ Footer ═══ */
+  footer {
+    text-align: center; padding: 36px 24px;
+    border-top: 1px solid var(--border); color: var(--text-muted);
+    font-size: 0.8rem; margin-top: 40px;
+  }
+
+  /* ═══ Responsive ═══ */
+  @media (max-width: 768px) {
+    /* Layers: tight, centered */
+    .layer { padding: 14px 12px; border-radius: 10px; text-align: center; }
+    .layer-title { font-size: 0.68rem; }
+    .layer-subtitle { font-size: 0.75rem; margin-bottom: 8px; }
+
+    /* Arrows: minimal */
+    .flow-arrow { padding: 2px 0; }
+    .flow-arrow .line { height: 14px; }
+    .flow-arrow .label { font-size: 0.6rem; padding: 2px 8px; }
+    .flow-arrow .triangle { border-left-width: 5px; border-right-width: 5px; border-top-width: 7px; }
+
+    /* Section header */
+    .section-header { padding: 30px 16px 6px; }
+    .section-title { font-size: 1.3rem; }
+    .section-desc { font-size: 0.88rem; }
+    .diagram-container { padding: 10px 12px 40px; }
+
+    /* Crew → 3x2 grid */
+    .app-grid { grid-template-columns: repeat(3, 1fr); gap: 5px; }
+    .app-card { padding: 7px 6px; text-align: center; }
+    .app-card .icon { font-size: 0.9rem; margin-bottom: 2px; }
+    .app-card .icon img { width: 22px; height: 22px; }
+    .app-card .name { font-size: 0.7rem; }
+    .app-card .role { font-size: 0.58rem; margin-top: 0; }
+
+    /* Search: tighter */
+    .search-row { flex-direction: row; gap: 8px; }
+    .search-item { padding: 8px 12px; }
+    .search-item .icon { font-size: 1rem; }
+    .search-item .name { font-size: 0.78rem; }
+    .search-plus { font-size: 1rem; }
+
+    /* VPN: compact row */
+    .vpn-badge { font-size: 0.68rem; padding: 4px 10px; margin-bottom: 8px; }
+    .vpn-clients { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .vpn-client { padding: 10px 8px; }
+    .vpn-client .icon { font-size: 1.2rem; margin-bottom: 2px; }
+    .vpn-client .name { font-size: 0.82rem; }
+    .vpn-client .type { font-size: 0.68rem; }
+    .vpn-client .detail { display: none; }
+    .shield-row { gap: 4px; margin-top: 8px; }
+    .shield-tag { font-size: 0.58rem; padding: 2px 6px; }
+
+    /* Storage: compact */
+    .storage-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+    .storage-folder { padding: 6px 4px; }
+    .storage-folder .icon { font-size: 0.9rem; margin-bottom: 1px; }
+    .storage-folder .name { font-size: 0.68rem; }
+    .storage-folder .path { font-size: 0.55rem; }
+
+    /* Players: inline */
+    .player-grid { grid-template-columns: 1fr 1fr; gap: 5px; }
+    .player-card { padding: 7px 8px; text-align: center; }
+    .player-card .icon { font-size: 0.9rem; margin-bottom: 2px; }
+    .player-card .name { font-size: 0.75rem; }
+    .player-card .alt { display: none; }
+
+    /* Security: tighter */
+    .security-section { padding: 30px 12px; }
+    .security-card { padding: 20px 14px; border-radius: 14px; }
+    .security-card h2 { font-size: 1.1rem; }
+    .sec-grid { grid-template-columns: 1fr; gap: 8px; }
+    .sec-item h4 { font-size: 0.82rem; }
+    .sec-item p { font-size: 0.72rem; }
+
+    /* CTA */
+    .cta-section { padding: 20px 12px 40px; }
+    .cta-card { padding: 28px 18px; }
+    .cta-card h2 { font-size: 1.3rem; }
+  }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 2rem; }
+    .hero { padding: 60px 14px 50px; }
+
+    .app-grid { grid-template-columns: repeat(3, 1fr); }
+    .player-grid { grid-template-columns: 1fr 1fr; }
+
+    .layer { padding: 10px 8px; }
+
+    .search-row { flex-direction: column; gap: 6px; }
+    .search-plus { transform: rotate(90deg); font-size: 0.8rem; }
+    .vpn-clients { grid-template-columns: 1fr; gap: 4px; }
+  }
 </style>
 </head>
-
 <body>
 
-<!-- ═══════════════════════════════════════════
-     NAVIGATION
-     ═══════════════════════════════════════════ -->
+<!-- NAV -->
 <nav id="nav">
   <div class="nav-inner">
-    <div class="nav-brand">arr-barr</div>
-    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">&#9776;</button>
+    <div class="nav-brand" onclick="go('landing')" style="cursor:pointer;">arr-barr</div>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">&#9776;</button>
     <div class="nav-links" id="navLinks">
-      <button class="nav-link active" onclick="showPage('landing')">Home</button>
-      <button class="nav-link" onclick="showPage('guide')">Get Started</button>
-      <button class="nav-link" onclick="showPage('architecture')">Deep Dive</button>
+      <button class="nav-link active" onclick="go('landing')">Home</button>
+      <button class="nav-link" onclick="go('guide')">Read the Guide</button>
+      <button class="nav-link" onclick="go('deep')">Below Deck</button>
     </div>
   </div>
 </nav>
 
-<!-- ═══════════════════════════════════════════
-     LANDING PAGE
-     ═══════════════════════════════════════════ -->
-<div class="page active" id="page-landing">
-
-  <section class="hero">
-    <div class="hero-logo">arr-barr</div>
-    <div class="hero-tagline">Pandai Technologies</div>
-    <p class="hero-desc">
-      A fully automated, self-hosted media server that searches, downloads, organizes, and streams
-      movies, TV, music, books, audiobooks, and games &mdash; all protected by a VPN kill switch.
-    </p>
-    <div class="hero-cta">
-      <button class="btn btn-primary" onclick="showPage('guide')">Get Started</button>
-      <button class="btn btn-ghost" onclick="showPage('architecture')">Explore Architecture</button>
-    </div>
-  </section>
-
-  <section class="stats">
-    <div class="stat"><div class="stat-num">15</div><div class="stat-label">Services</div></div>
-    <div class="stat"><div class="stat-num">12</div><div class="stat-label">Indexers</div></div>
-    <div class="stat"><div class="stat-num">97</div><div class="stat-label">Custom Formats</div></div>
-    <div class="stat"><div class="stat-num">12</div><div class="stat-label">CLI Commands</div></div>
-    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Media Types</div></div>
-  </section>
-
-  <section class="features">
-    <div style="grid-column: 1 / -1; text-align: center; margin-bottom: 1rem;">
-      <h2 class="section-title">What Makes It Tick</h2>
-      <p class="section-sub">Six layers working together, fully automated</p>
-    </div>
-
-    <div class="feature">
-      <div class="feature-icon" style="background: rgba(243,139,168,0.1); color: var(--red);">&#128274;</div>
-      <h3>VPN Kill Switch</h3>
-      <p>All download traffic flows through a WireGuard tunnel. If the VPN drops, iptables blocks everything &mdash; your real IP is never exposed. The tunnel auto-restarts within seconds.</p>
-    </div>
-
-    <div class="feature">
-      <div class="feature-icon" style="background: rgba(116,199,236,0.1); color: var(--sapphire);">&#128269;</div>
-      <h3>Smart Search</h3>
-      <p>Prowlarr manages 12 indexers (8 torrent + 4 usenet) with FlareSolverr bypassing Cloudflare. Results are scored by 97 custom formats across quality tiers.</p>
-    </div>
-
-    <div class="feature">
-      <div class="feature-icon" style="background: rgba(166,227,161,0.1); color: var(--green);">&#128279;</div>
-      <h3>Zero-Waste Hardlinks</h3>
-      <p>Downloaded files are hardlinked into the library &mdash; same data blocks, two filenames, zero extra disk space. Torrents keep seeding while Jellyfin streams.</p>
-    </div>
-
-    <div class="feature">
-      <div class="feature-icon" style="background: rgba(203,166,247,0.1); color: var(--mauve);">&#127916;</div>
-      <h3>Six Media Types</h3>
-      <p>Movies, TV shows, music, ebooks, audiobooks, and games. Each has a dedicated pipeline with its own quality profiles, naming conventions, and library management.</p>
-    </div>
-
-    <div class="feature">
-      <div class="feature-icon" style="background: rgba(249,226,175,0.1); color: var(--yellow);">&#9000;</div>
-      <h3>Powerful CLI</h3>
-      <p>12 commands with Catppuccin theming, animated dashboards, parallel health checks, self-repair diagnostics, and one-command updates. Tab completion included.</p>
-    </div>
-
-    <div class="feature">
-      <div class="feature-icon" style="background: rgba(137,180,250,0.1); color: var(--blue);">&#128101;</div>
-      <h3>Friend-Ready</h3>
-      <p>Clone, run setup, done. Friends get their own stack with one-command updates. Jellyseerr provides a Netflix-like request interface for non-technical users.</p>
-    </div>
-  </section>
-
-  <section class="topology">
-    <h2 class="section-title">Service Map</h2>
-    <p class="section-sub">Click any service to learn what it does</p>
-
-    <div class="topo-grid">
-      <div class="topo-zone-label"><span class="accent-red">&#9679;</span> VPN Tunnel</div>
-      <div class="topo-node vpn-zone" onclick="showServiceInfo(this)" data-info="WireGuard VPN tunnel with iptables kill switch. All download client traffic is encrypted and routed through this tunnel. If it drops, everything stops.">
-        <div class="topo-icon">&#128274;</div><div class="topo-name">Gluetun</div><div class="topo-role">VPN Tunnel</div>
-      </div>
-      <div class="topo-node vpn-zone" onclick="showServiceInfo(this)" data-info="Torrent download client. Runs inside Gluetun's network namespace — shares its IP, its tunnel, and its kill switch. Downloads land in category-specific subdirectories.">
-        <div class="topo-icon">&#11015;</div><div class="topo-name">Transmission</div><div class="topo-role">Torrents</div><div class="topo-port">:9091</div>
-      </div>
-      <div class="topo-node vpn-zone" onclick="showServiceInfo(this)" data-info="Usenet download client. Also inside Gluetun's network. Downloads NZB articles from 4 usenet servers (148 total connections) with automatic par2 repair and RAR extraction.">
-        <div class="topo-icon">&#11015;</div><div class="topo-name">SABnzbd</div><div class="topo-role">Usenet</div><div class="topo-port">:8080</div>
-      </div>
-
-      <div class="topo-zone-label"><span class="accent-sapphire">&#9679;</span> Search &amp; Indexing</div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Central indexer manager. Configures 12 indexers once, syncs them automatically to Radarr, Sonarr, and Lidarr via fullSync every 6 hours. Supports both Torznab and Newznab protocols.">
-        <div class="topo-icon">&#128270;</div><div class="topo-name">Prowlarr</div><div class="topo-role">Indexers</div><div class="topo-port">:9696</div>
-      </div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Runs headless Chromium to solve Cloudflare challenges. All 8 torrent indexers route through FlareSolverr. Stateless — no persistent config. Adds a few seconds of latency per protected request.">
-        <div class="topo-icon">&#128737;</div><div class="topo-name">FlareSolverr</div><div class="topo-role">CF Bypass</div><div class="topo-port">:8191</div>
-      </div>
-
-      <div class="topo-zone-label"><span class="accent-blue">&#9679;</span> Media Management</div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Movie management. 48 custom formats (TRaSH Guide) score releases by release group tier, movie version (IMAX, Special Edition), and source quality. Hardlinks completed downloads into the library.">
-        <div class="topo-icon">&#127909;</div><div class="topo-name">Radarr</div><div class="topo-role">Movies</div><div class="topo-port">:7878</div>
-      </div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="TV show management. 44 custom formats with streaming service scoring (+75 each for Netflix, Disney+, etc.), HDR/DV boosts, and season pack logic. Handles both standard and anime series.">
-        <div class="topo-icon">&#128250;</div><div class="topo-name">Sonarr</div><div class="topo-role">TV Shows</div><div class="topo-port">:8989</div>
-      </div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Music management. 5 custom formats from Davo's Guide: CD (+500), Preferred Groups (+500), WEB (+200), Lossless (+100), Vinyl (-10000). Uses MusicBrainz for metadata.">
-        <div class="topo-icon">&#127925;</div><div class="topo-name">Lidarr</div><div class="topo-role">Music</div><div class="topo-port">:8686</div>
-      </div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Automatic subtitle downloads. Monitors Radarr and Sonarr for new imports, queries subtitle providers, scores results against media file metadata, and places .srt files alongside media.">
-        <div class="topo-icon">&#128172;</div><div class="topo-name">Bazarr</div><div class="topo-role">Subtitles</div><div class="topo-port">:6767</div>
-      </div>
-
-      <div class="topo-zone-label"><span class="accent-peach">&#9679;</span> Books, Audio &amp; Games</div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Book and audiobook search engine. Uses GoodReads for metadata. PostProcessor runs every 10 minutes, sorting downloads by file type: ebooks → /books, audio → /audiobooks. Docker mods add Calibre and FFmpeg.">
-        <div class="topo-icon">&#128218;</div><div class="topo-name">LazyLibrarian</div><div class="topo-role">Book Search</div><div class="topo-port">:5299</div>
-      </div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Browser-based ebook reader. Reads from /books (read-only mount). Supports epub, pdf, mobi. Tracks reading progress with bookmarks.">
-        <div class="topo-icon">&#128214;</div><div class="topo-name">Kavita</div><div class="topo-role">Ebook Reader</div><div class="topo-port">:5004</div>
-      </div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Audiobook and podcast server. Reads from /audiobooks (read-only mount). Tracks playback progress, supports bookmarks and chapter navigation. Has dedicated mobile apps.">
-        <div class="topo-icon">&#127911;</div><div class="topo-name">Audiobookshelf</div><div class="topo-role">Audiobooks</div><div class="topo-port">:13378</div>
-      </div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Game search and download. Uses IGDB for metadata, searches through Prowlarr. Search-only — a separate cron script (game-import.sh) handles moving completed downloads to the game library every 15 minutes.">
-        <div class="topo-icon">&#127918;</div><div class="topo-name">QuestArr</div><div class="topo-role">Games</div><div class="topo-port">:5002</div>
-      </div>
-
-      <div class="topo-zone-label"><span class="accent-green">&#9679;</span> Streaming &amp; Requests</div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="Self-hosted media server (like Netflix). Streams movies, TV, and music. Runs on the host network for maximum performance. Supports hardware transcoding for remote streaming.">
-        <div class="topo-icon">&#9654;</div><div class="topo-name">Jellyfin</div><div class="topo-role">Media Server</div><div class="topo-port">:8096</div>
-      </div>
-      <div class="topo-node" onclick="showServiceInfo(this)" data-info="User-friendly request interface. Non-technical users browse by poster, click request, and it automatically adds to Radarr or Sonarr. Shows request status and integrates with Jellyfin for 'already available' detection.">
-        <div class="topo-icon">&#128588;</div><div class="topo-name">Jellyseerr</div><div class="topo-role">Requests</div><div class="topo-port">:5055</div>
-      </div>
-    </div>
-
-    <div id="serviceInfoPanel" style="display:none; margin-top: 1.5rem; padding: 1.25rem; background: var(--surface0); border: 1px solid var(--sapphire); border-radius: var(--radius); animation: fadeUp 0.3s ease;">
-      <p id="serviceInfoText" style="font-size: 0.92rem; color: var(--subtext1);"></p>
-    </div>
-  </section>
-
-  <footer>
-    <p>arr-barr &mdash; Pandai Technologies</p>
-    <p class="mt-1" style="font-size: 0.78rem;">Open source. Self-hosted. Your media, your rules.</p>
-  </footer>
+<!-- Side Rail -->
+<div class="side-rail" id="sideRail">
+  <div class="rail-dot" data-label="Top" onclick="railTo('hero')"></div>
+  <div class="rail-dot" data-label="How It Runs" onclick="railTo('flow')"></div>
+  <div class="rail-dot" data-label="The Crew" onclick="railTo('crew')"></div>
+  <div class="rail-dot" data-label="The Tunnel" onclick="railTo('vpn')"></div>
+  <div class="rail-dot" data-label="Security" onclick="railTo('sec')"></div>
+  <div class="rail-sep"></div>
+  <div class="rail-top" onclick="railTo('hero')" title="Back to top">&#9650;</div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     GUIDE PAGE
-     ═══════════════════════════════════════════ -->
-<div class="page" id="page-guide">
+<!-- ══════════════════════════════════════════════════════
+     PAGE: LANDING
+     ══════════════════════════════════════════════════════ -->
+<div class="page active" id="p-landing">
 
-  <section class="guide-hero">
-    <h1>Get Started</h1>
-    <p>From zero to streaming in minutes</p>
-  </section>
+  <div class="hero" id="s-hero">
 
-  <div class="guide-nav">
-    <button class="guide-nav-btn active" onclick="showGuideSection('setup')">Setup</button>
-    <button class="guide-nav-btn" onclick="showGuideSection('usage')">How To Use</button>
-    <button class="guide-nav-btn" onclick="showGuideSection('commands')">CLI Commands</button>
-    <button class="guide-nav-btn" onclick="showGuideSection('tips')">Tips &amp; Tricks</button>
+    <!-- Compass Rose -->
+    <div class="compass-wrap">
+      <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <polygon id="cp" points="200,22 214,100 200,62 186,100"/>
+          <polygon id="ip" points="200,68 208,125 200,105 192,125"/>
+          <line id="tm" x1="200" y1="4" x2="200" y2="26"/>
+          <line id="ts" x1="200" y1="7" x2="200" y2="18"/>
+          <circle id="td" cx="200" cy="11" r="1"/>
+        </defs>
+
+        <!-- Triple outer ring -->
+        <circle cx="200" cy="200" r="196" stroke="rgba(99,102,241,0.12)" stroke-width="0.3"/>
+        <circle cx="200" cy="200" r="192" stroke="rgba(99,102,241,0.16)" stroke-width="0.7"/>
+        <circle cx="200" cy="200" r="188" stroke="rgba(99,102,241,0.12)" stroke-width="0.3"/>
+
+        <!-- Major ticks at cardinal (0,90,180,270) -->
+        <use href="#tm" transform="rotate(0,200,200)" stroke="rgba(99,102,241,0.20)" stroke-width="0.9"/>
+        <use href="#tm" transform="rotate(90,200,200)" stroke="rgba(99,102,241,0.20)" stroke-width="0.9"/>
+        <use href="#tm" transform="rotate(180,200,200)" stroke="rgba(99,102,241,0.20)" stroke-width="0.9"/>
+        <use href="#tm" transform="rotate(270,200,200)" stroke="rgba(99,102,241,0.20)" stroke-width="0.9"/>
+        <!-- Minor ticks at 30° intervals -->
+        <use href="#ts" transform="rotate(30,200,200)" stroke="rgba(99,102,241,0.12)" stroke-width="0.5"/>
+        <use href="#ts" transform="rotate(60,200,200)" stroke="rgba(99,102,241,0.12)" stroke-width="0.5"/>
+        <use href="#ts" transform="rotate(120,200,200)" stroke="rgba(99,102,241,0.12)" stroke-width="0.5"/>
+        <use href="#ts" transform="rotate(150,200,200)" stroke="rgba(99,102,241,0.12)" stroke-width="0.5"/>
+        <use href="#ts" transform="rotate(210,200,200)" stroke="rgba(99,102,241,0.12)" stroke-width="0.5"/>
+        <use href="#ts" transform="rotate(240,200,200)" stroke="rgba(99,102,241,0.12)" stroke-width="0.5"/>
+        <use href="#ts" transform="rotate(300,200,200)" stroke="rgba(99,102,241,0.12)" stroke-width="0.5"/>
+        <use href="#ts" transform="rotate(330,200,200)" stroke="rgba(99,102,241,0.12)" stroke-width="0.5"/>
+        <!-- Dot ticks at 10° intervals -->
+        <use href="#td" transform="rotate(10,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(20,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(40,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(50,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(70,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(80,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(100,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(110,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(130,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(140,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(160,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(170,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(190,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(200,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(220,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(230,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(250,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(260,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(280,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(290,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(310,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(320,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(340,200,200)" fill="rgba(99,102,241,0.10)"/>
+        <use href="#td" transform="rotate(350,200,200)" fill="rgba(99,102,241,0.10)"/>
+
+        <!-- Inner rings -->
+        <circle cx="200" cy="200" r="165" stroke="rgba(99,102,241,0.10)" stroke-width="0.4"/>
+        <circle cx="200" cy="200" r="130" stroke="rgba(99,102,241,0.08)" stroke-width="0.4" stroke-dasharray="3 6"/>
+        <circle cx="200" cy="200" r="85" stroke="rgba(99,102,241,0.10)" stroke-width="0.4"/>
+        <circle cx="200" cy="200" r="35" stroke="rgba(99,102,241,0.12)" stroke-width="0.5"/>
+
+        <!-- Cross lines -->
+        <line x1="200" y1="28" x2="200" y2="372" stroke="rgba(99,102,241,0.10)" stroke-width="0.4"/>
+        <line x1="28" y1="200" x2="372" y2="200" stroke="rgba(99,102,241,0.10)" stroke-width="0.4"/>
+        <line x1="60" y1="60" x2="340" y2="340" stroke="rgba(99,102,241,0.06)" stroke-width="0.3" stroke-dasharray="4 8"/>
+        <line x1="340" y1="60" x2="60" y2="340" stroke="rgba(99,102,241,0.06)" stroke-width="0.3" stroke-dasharray="4 8"/>
+
+        <!-- 4 Cardinal points (identical, rotated) -->
+        <use href="#cp" transform="rotate(0,200,200)" fill="rgba(99,102,241,0.16)" stroke="rgba(99,102,241,0.12)" stroke-width="0.4"/>
+        <use href="#cp" transform="rotate(90,200,200)" fill="rgba(99,102,241,0.13)" stroke="rgba(99,102,241,0.10)" stroke-width="0.4"/>
+        <use href="#cp" transform="rotate(180,200,200)" fill="rgba(99,102,241,0.13)" stroke="rgba(99,102,241,0.10)" stroke-width="0.4"/>
+        <use href="#cp" transform="rotate(270,200,200)" fill="rgba(99,102,241,0.13)" stroke="rgba(99,102,241,0.10)" stroke-width="0.4"/>
+
+        <!-- 4 Intercardinal points (identical, rotated, shorter) -->
+        <use href="#ip" transform="rotate(45,200,200)" fill="rgba(99,102,241,0.09)" stroke="rgba(99,102,241,0.07)" stroke-width="0.3"/>
+        <use href="#ip" transform="rotate(135,200,200)" fill="rgba(99,102,241,0.09)" stroke="rgba(99,102,241,0.07)" stroke-width="0.3"/>
+        <use href="#ip" transform="rotate(225,200,200)" fill="rgba(99,102,241,0.09)" stroke="rgba(99,102,241,0.07)" stroke-width="0.3"/>
+        <use href="#ip" transform="rotate(315,200,200)" fill="rgba(99,102,241,0.09)" stroke="rgba(99,102,241,0.07)" stroke-width="0.3"/>
+
+        <!-- Center -->
+        <circle cx="200" cy="200" r="8" fill="rgba(99,102,241,0.10)" stroke="rgba(99,102,241,0.16)" stroke-width="0.6"/>
+        <circle cx="200" cy="200" r="3" fill="rgba(99,102,241,0.20)"/>
+
+        <!-- Cardinal letters -->
+        <text x="200" y="50" text-anchor="middle" fill="rgba(99,102,241,0.22)" font-size="16" font-family="Georgia,serif" font-weight="400" letter-spacing="1">N</text>
+        <text x="200" y="365" text-anchor="middle" fill="rgba(99,102,241,0.16)" font-size="14" font-family="Georgia,serif">S</text>
+        <text x="362" y="205" text-anchor="middle" fill="rgba(99,102,241,0.16)" font-size="14" font-family="Georgia,serif">E</text>
+        <text x="38" y="205" text-anchor="middle" fill="rgba(99,102,241,0.16)" font-size="14" font-family="Georgia,serif">W</text>
+
+        <!-- Intercardinal letters -->
+        <text x="316" y="90" text-anchor="middle" fill="rgba(99,102,241,0.09)" font-size="8" font-family="Georgia,serif">NE</text>
+        <text x="84" y="90" text-anchor="middle" fill="rgba(99,102,241,0.09)" font-size="8" font-family="Georgia,serif">NW</text>
+        <text x="316" y="320" text-anchor="middle" fill="rgba(99,102,241,0.09)" font-size="8" font-family="Georgia,serif">SE</text>
+        <text x="84" y="320" text-anchor="middle" fill="rgba(99,102,241,0.09)" font-size="8" font-family="Georgia,serif">SW</text>
+
+        <!-- Fleur-de-lis at North -->
+        <path d="M200,24 C200,24 195,35 193,39 C191,43 196,41 200,35 C204,41 209,43 207,39 C205,35 200,24 200,24Z" fill="rgba(99,102,241,0.18)"/>
+      </svg>
+    </div>
+
+    <!-- Side embellishments (desktop only) -->
+    <div class="hero-side left">
+      <svg viewBox="0 0 20 300" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="0" x2="10" y2="300" stroke="rgba(99,102,241,0.16)" stroke-width="0.5"/>
+        <line x1="14" y1="20" x2="14" y2="280" stroke="rgba(99,102,241,0.08)" stroke-width="0.3"/>
+        <circle cx="10" cy="30" r="2" fill="rgba(99,102,241,0.11)"/>
+        <circle cx="10" cy="75" r="1.2" fill="rgba(99,102,241,0.16)"/>
+        <circle cx="10" cy="150" r="2.5" stroke="rgba(99,102,241,0.11)" stroke-width="0.5"/>
+        <circle cx="10" cy="150" r="1" fill="rgba(99,102,241,0.13)"/>
+        <circle cx="10" cy="225" r="1.2" fill="rgba(99,102,241,0.16)"/>
+        <circle cx="10" cy="270" r="2" fill="rgba(99,102,241,0.11)"/>
+        <rect x="8" y="110" width="4" height="4" transform="rotate(45 10 112)" fill="rgba(99,102,241,0.16)"/>
+        <rect x="8" y="190" width="4" height="4" transform="rotate(45 10 192)" fill="rgba(99,102,241,0.16)"/>
+      </svg>
+    </div>
+    <div class="hero-side right">
+      <svg viewBox="0 0 20 300" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="0" x2="10" y2="300" stroke="rgba(99,102,241,0.16)" stroke-width="0.5"/>
+        <line x1="6" y1="20" x2="6" y2="280" stroke="rgba(99,102,241,0.08)" stroke-width="0.3"/>
+        <circle cx="10" cy="30" r="2" fill="rgba(99,102,241,0.11)"/>
+        <circle cx="10" cy="75" r="1.2" fill="rgba(99,102,241,0.16)"/>
+        <circle cx="10" cy="150" r="2.5" stroke="rgba(99,102,241,0.11)" stroke-width="0.5"/>
+        <circle cx="10" cy="150" r="1" fill="rgba(99,102,241,0.13)"/>
+        <circle cx="10" cy="225" r="1.2" fill="rgba(99,102,241,0.16)"/>
+        <circle cx="10" cy="270" r="2" fill="rgba(99,102,241,0.11)"/>
+        <rect x="8" y="110" width="4" height="4" transform="rotate(45 10 112)" fill="rgba(99,102,241,0.16)"/>
+        <rect x="8" y="190" width="4" height="4" transform="rotate(45 10 192)" fill="rgba(99,102,241,0.16)"/>
+      </svg>
+    </div>
+
+    <h1>arr-barr</h1>
+    <div class="hero-tag">Every crew needs a port</div>
+    <!-- Live terminal -->
+    <div class="hero-term" id="heroTerm">
+      <div class="term-bar"><span class="term-dot red"></span><span class="term-dot yellow"></span><span class="term-dot green"></span><span class="term-title">arr-barr</span></div>
+      <div class="term-body" id="termBody"></div>
+    </div>
+
+    <div class="hero-cta">
+      <button class="btn btn-primary" onclick="go('guide')">Read the Guide</button>
+      <button class="btn btn-ghost" onclick="go('deep')">Explore the Stack</button>
+    </div>
+    <div class="hero-wave">
+      <svg viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0,30 C150,50 350,10 600,30 C850,50 1050,10 1200,30 L1200,60 L0,60 Z" fill="#0a0e1a" opacity="0.7"/><path d="M0,35 C200,55 400,15 600,35 C800,55 1000,15 1200,35 L1200,60 L0,60 Z" fill="#0a0e1a"/></svg>
+    </div>
+  </div>
+
+
+  <!-- THE BIG PICTURE FLOW -->
+  <div class="section-header">
+    <h2 class="section-title" id="s-flow">How the Barr Runs</h2>
+    <p class="section-desc">Every member of the crew has a role. Together, they form an automated pipeline that takes you from "I want to watch that" to watching it &mdash; with zero manual work in between.</p>
+  </div>
+
+  <div class="diagram-container">
+    <div class="flow-diagram">
+
+      <!-- REQUEST -->
+      <div class="layer layer-request">
+        <div class="layer-title">The Notice Board</div>
+        <div class="layer-subtitle">A Netflix-like interface where you post what you're looking for</div>
+        <div class="request-app">
+          <div class="icon">&#x1F3AC;</div>
+          <div><div class="name">Jellyseerr</div><div class="rdesc">Browse &bull; Request &bull; Track</div></div>
+        </div>
+      </div>
+
+      <div class="flow-arrow"><div class="line"></div><div class="label">Sends the order to the right crew member</div><div class="line"></div><div class="triangle"></div></div>
+
+      <!-- BRAINS -->
+      <div class="layer layer-brains" id="s-crew">
+        <div class="layer-title">The Crew</div>
+        <div class="layer-subtitle">Each member runs one part of the operation. They know what you have, what you want, and where to find it.</div>
+        <div class="app-grid">
+          <div class="app-card"><div class="icon"><img src="https://raw.githubusercontent.com/Radarr/Radarr/develop/Logo/128.png" alt="Radarr"></div><div class="name">Radarr</div><div class="role">Movies</div></div>
+          <div class="app-card"><div class="icon"><img src="https://raw.githubusercontent.com/Sonarr/Sonarr/develop/Logo/128.png" alt="Sonarr"></div><div class="name">Sonarr</div><div class="role">TV Shows</div></div>
+          <div class="app-card"><div class="icon"><img src="https://raw.githubusercontent.com/Lidarr/Lidarr/develop/Logo/128.png" alt="Lidarr"></div><div class="name">Lidarr</div><div class="role">Music</div></div>
+          <div class="app-card"><div class="icon"><img src="https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/lazylibrarian-icon.png" alt="LazyLibrarian"></div><div class="name">LazyLibrarian</div><div class="role">Books &amp; Audio</div></div>
+          <div class="app-card"><div class="icon"><img src="https://raw.githubusercontent.com/morpheus65535/bazarr/master/frontend/public/images/logo64.png" alt="Bazarr"></div><div class="name">Bazarr</div><div class="role">Subtitles</div></div>
+          <div class="app-card"><div class="icon"><img src="https://raw.githubusercontent.com/Doezer/QuestArr/main/public/logo192.png" alt="QuestArr"></div><div class="name">QuestArr</div><div class="role">Games</div></div>
+        </div>
+      </div>
+
+      <div class="flow-arrow"><div class="line"></div><div class="label">"Search every port for this"</div><div class="line"></div><div class="triangle"></div></div>
+
+      <!-- SEARCH -->
+      <div class="layer layer-search">
+        <div class="layer-title">The Scouts</div>
+        <div class="layer-subtitle">Canvas 12 sources to find the best available version</div>
+        <div class="search-row">
+          <div class="search-item"><div class="icon">&#x1F50D;</div><div class="name">Prowlarr</div><div class="sdesc">Manages all indexers</div></div>
+          <div class="search-plus">+</div>
+          <div class="search-item"><div class="icon">&#x1F6E1;&#xFE0F;</div><div class="name">FlareSolverr</div><div class="sdesc">Bypasses anti-bot walls</div></div>
+        </div>
+      </div>
+
+      <div class="flow-arrow"><div class="line"></div><div class="label">Best cargo located &mdash; bring it in</div><div class="line"></div><div class="triangle"></div></div>
+
+      <!-- VPN -->
+      <div class="layer layer-vpn" id="s-vpn">
+        <div class="vpn-badge"><div class="dot"></div>VPN Tunnel Active &mdash; All Traffic Encrypted</div>
+        <div class="layer-title">&#x1F512; The Smuggler's Tunnel</div>
+        <div class="layer-subtitle">Download clients run <strong>inside</strong> an encrypted WireGuard tunnel. If it drops, everything stops instantly &mdash; the kill switch makes sure nothing leaks.</div>
+        <div class="vpn-clients">
+          <div class="vpn-client">
+            <div class="icon">&#x26A1;</div><div class="name">SABnzbd</div><div class="type">Usenet</div>
+            <div class="detail">Direct download from Usenet servers over SSL. Fast, private, no sharing required.</div>
+          </div>
+          <div class="vpn-client">
+            <div class="icon">&#x1F300;</div><div class="name">Transmission</div><div class="type">Torrents</div>
+            <div class="detail">Peer-to-peer downloads with WireGuard encryption. Seeds back to the community via hardlinks.</div>
+          </div>
+        </div>
+        <div class="shield-row">
+          <span class="shield-tag">&#x1F512; WireGuard</span>
+          <span class="shield-tag">&#x1F6AB; Kill Switch</span>
+          <span class="shield-tag">&#x1F6E1;&#xFE0F; IP Hidden</span>
+          <span class="shield-tag">&#x1F517; Hardlinks</span>
+        </div>
+      </div>
+
+      <div class="flow-arrow"><div class="line"></div><div class="label">Cargo sorted &amp; stowed automatically</div><div class="line"></div><div class="triangle"></div></div>
+
+      <!-- STORAGE -->
+      <div class="layer layer-storage">
+        <div class="layer-title">The Vault</div>
+        <div class="layer-subtitle">Everything neatly sorted with proper names, artwork, and metadata. Ready to serve.</div>
+        <div class="storage-grid">
+          <div class="storage-folder"><div class="icon">&#x1F3AC;</div><div class="name">Movies</div><div class="path">/media/movies/</div></div>
+          <div class="storage-folder"><div class="icon">&#x1F4FA;</div><div class="name">TV Shows</div><div class="path">/media/tv/</div></div>
+          <div class="storage-folder"><div class="icon">&#x1F3B5;</div><div class="name">Music</div><div class="path">/media/music/</div></div>
+          <div class="storage-folder"><div class="icon">&#x1F4D6;</div><div class="name">Books</div><div class="path">/media/books/</div></div>
+          <div class="storage-folder"><div class="icon">&#x1F3A7;</div><div class="name">Audiobooks</div><div class="path">/media/audiobooks/</div></div>
+          <div class="storage-folder"><div class="icon">&#x1F3AE;</div><div class="name">Games</div><div class="path">/media/games/</div></div>
+        </div>
+      </div>
+
+      <div class="flow-arrow"><div class="line"></div><div class="label">Served up to the taproom</div><div class="line"></div><div class="triangle"></div></div>
+
+      <!-- PLAYERS -->
+      <div class="layer layer-players">
+        <div class="layer-title">The Taproom</div>
+        <div class="layer-subtitle">Pull up a chair. Stream everything from your own server &mdash; no subscriptions, no limits.</div>
+        <div class="player-grid">
+          <div class="player-card"><div class="icon">&#x1F4FA;</div><div class="name">Jellyfin</div><div class="alt">Movies, TV, Music</div></div>
+          <div class="player-card"><div class="icon">&#x1F4D6;</div><div class="name">Kavita</div><div class="alt">Ebooks</div></div>
+          <div class="player-card"><div class="icon">&#x1F3A7;</div><div class="name">Audiobookshelf</div><div class="alt">Audiobooks</div></div>
+          <div class="player-card"><div class="icon">&#x1F3AE;</div><div class="name">GameVault</div><div class="alt">Games</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECURITY -->
+  <div class="security-section">
+    <div class="security-card" id="s-sec">
+      <h2>&#x1F512; Covering Your Tracks</h2>
+      <div class="sec-grid">
+        <div class="sec-item"><div class="check">&#x2705;</div><div><h4>VPN Kill Switch</h4><p>If the VPN drops, all download traffic is instantly blocked. Your real IP can never leak.</p></div></div>
+        <div class="sec-item"><div class="check">&#x2705;</div><div><h4>WireGuard Encryption</h4><p>All download traffic is encrypted. Your ISP sees data going to a VPN server &mdash; nothing more.</p></div></div>
+        <div class="sec-item"><div class="check">&#x2705;</div><div><h4>Network Isolation</h4><p>Only download clients use the VPN. Streaming and management apps connect normally &mdash; no speed penalty.</p></div></div>
+        <div class="sec-item"><div class="check">&#x2705;</div><div><h4>Zero-Waste Hardlinks</h4><p>Downloaded files are hardlinked, not copied. A 50 GB movie uses 50 GB total &mdash; not 100 GB.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="cta-card">
+      <h2>&#x1F680; Ready to Join the Crew?</h2>
+      <p>Everything you need is in the repo. The setup wizard handles the heavy lifting.</p>
+      <button class="btn btn-primary" onclick="go('guide')">Read the Guide</button>
+    </div>
+  </div>
+
+  <footer><p>arr-barr &mdash; Pandai Technologies</p><p style="margin-top:4px;font-size:0.72rem;">Open source. Self-hosted. Every crew needs a port.</p></footer>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE: GET STARTED
+     ══════════════════════════════════════════════════════ -->
+<div class="page" id="p-guide">
+  <div class="page-header"><h1>Welcome Aboard</h1><p>From empty dock to full operation in minutes</p></div>
+
+  <div class="guide-tabs">
+    <button class="tab-btn active" onclick="tab('setup',this)">Setup</button>
+    <button class="tab-btn" onclick="tab('usage',this)">How To Use</button>
+    <button class="tab-btn" onclick="tab('commands',this)">CLI Commands</button>
+    <button class="tab-btn" onclick="tab('tips',this)">Tips</button>
   </div>
 
   <!-- SETUP -->
-  <section class="guide-section active" id="guide-setup">
+  <div class="tab-panel active" id="t-setup">
     <div class="timeline">
-      <div class="step" data-step="1">
-        <h3>Clone the Repository</h3>
-        <p>Get the code onto your server (NAS, VPS, or any Docker-capable machine).</p>
-        <div class="cmd-block">
-          <span>git clone https://github.com/TrashedPandai/arr-barr.git && cd arr-barr</span>
-          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
-        </div>
-      </div>
-
-      <div class="step" data-step="2">
-        <h3>Run Setup</h3>
-        <p>The setup wizard handles everything: installs the CLI, creates your environment file, builds the directory tree, applies config templates, and pulls all Docker images.</p>
-        <div class="cmd-block">
-          <span>bash .cli/setup.sh</span>
-          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
-        </div>
-        <p class="mt-1 text-dim text-sm">You'll be prompted for your VPN credentials (WireGuard private key, public key, and endpoint). Get these from your VPN provider.</p>
-      </div>
-
-      <div class="step" data-step="3">
-        <h3>Start the Stack</h3>
-        <p>Bring everything online. Gluetun establishes the VPN tunnel first, then download clients start, then all other services launch in parallel.</p>
-        <div class="cmd-block">
-          <span>arr start</span>
-          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
-        </div>
-      </div>
-
-      <div class="step" data-step="4">
-        <h3>Verify Everything Is Healthy</h3>
-        <p>Run the health check to hit all 15 service endpoints in parallel. Green dots mean healthy.</p>
-        <div class="cmd-block">
-          <span>arr health</span>
-          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
-        </div>
-      </div>
-
-      <div class="step" data-step="5">
-        <h3>Configure Prowlarr</h3>
-        <p>Open Prowlarr at <code>:9696</code> and add your indexers. They'll automatically sync to Radarr, Sonarr, and Lidarr. Add FlareSolverr as an indexer proxy for Cloudflare-protected sites.</p>
-      </div>
-
-      <div class="step" data-step="6">
-        <h3>Start Requesting</h3>
-        <p>Open Jellyseerr at <code>:5055</code>, sign in with your Jellyfin account, and start requesting movies and shows. They'll be searched, downloaded, organized, and added to Jellyfin automatically.</p>
-      </div>
+      <div class="step" data-step="1"><h3>Claim Your Copy</h3><p>Get the code onto your server.</p><div class="cmd-block"><span>git clone https://github.com/TrashedPandai/arr-barr.git && cd arr-barr</span><button class="copy-btn" onclick="copy(this)">Copy</button></div></div>
+      <div class="step" data-step="2"><h3>Run Setup</h3><p>The wizard installs the CLI, creates your .env, builds directories, applies templates, and pulls all Docker images.</p><div class="cmd-block"><span>bash .cli/setup.sh</span><button class="copy-btn" onclick="copy(this)">Copy</button></div><p style="color:var(--text-muted);font-size:0.85rem;margin-top:6px;">You'll be prompted for VPN credentials (WireGuard keys + endpoint from your provider).</p></div>
+      <div class="step" data-step="3"><h3>Set Sail</h3><p>Gluetun opens the tunnel first, then the download clients come online, then the rest of the crew launches in parallel.</p><div class="cmd-block"><span>arr start</span><button class="copy-btn" onclick="copy(this)">Copy</button></div></div>
+      <div class="step" data-step="4"><h3>Roll Call</h3><p>Hit all 15 service endpoints in parallel. Green dots mean the crew member is ready.</p><div class="cmd-block"><span>arr health</span><button class="copy-btn" onclick="copy(this)">Copy</button></div></div>
+      <div class="step" data-step="5"><h3>Chart Your Sources</h3><p>Open Prowlarr at <code>:9696</code> and add your indexers. They auto-sync to the rest of the crew.</p></div>
+      <div class="step" data-step="6"><h3>Place Your First Order</h3><p>Open Jellyseerr at <code>:5055</code>, sign in, and request something. The crew handles the rest.</p></div>
     </div>
-  </section>
+  </div>
 
   <!-- USAGE -->
-  <section class="guide-section" id="guide-usage">
-    <h2 class="mb-4">How It All Connects</h2>
-
-    <div class="detail-card open">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#127909; Requesting a Movie or Show</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p><strong>1.</strong> Open Jellyseerr (<code>:5055</code>) and search for what you want.</p>
-        <p><strong>2.</strong> Click <strong>Request</strong>. Jellyseerr adds it to Radarr (movies) or Sonarr (TV).</p>
-        <p><strong>3.</strong> The arr app automatically searches all indexers via Prowlarr.</p>
-        <p><strong>4.</strong> Results are scored by custom formats &mdash; the best release is grabbed.</p>
-        <p><strong>5.</strong> The download client fetches it through the VPN tunnel.</p>
-        <p><strong>6.</strong> On completion, the file is hardlinked into the library and Jellyfin picks it up.</p>
-        <p><strong>7.</strong> Bazarr automatically fetches subtitles for the new file.</p>
-        <p class="mt-1 text-dim">Total time: usually 5&ndash;30 minutes depending on the release.</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#127925; Adding Music</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p>Open Lidarr (<code>:8686</code>), search for an artist, and add them. Lidarr uses MusicBrainz for metadata and monitors for new releases.</p>
-        <p>Albums are scored using Davo's custom formats: CD rips and preferred release groups score highest, vinyl rips are rejected.</p>
-        <p>Music appears in Jellyfin's music library automatically.</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#128218; Getting Books &amp; Audiobooks</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p>Enable the book profiles in your <code>.env</code> file (<code>COMPOSE_PROFILES=kavita,audiobookshelf</code>), then restart.</p>
-        <p>Open LazyLibrarian (<code>:5299</code>) and add authors. It searches using GoodReads metadata.</p>
-        <p>The PostProcessor automatically sorts ebooks to Kavita and audiobooks to Audiobookshelf every 10 minutes.</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#127918; Finding Games</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p>Open QuestArr (<code>:5002</code>) and search for a game. Pick a release and it's sent to the download client.</p>
-        <p>A background script (<code>game-import.sh</code>) runs every 15 minutes to move completed downloads into the game library with 9 safety checks.</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#128260; How Upgrades Work</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p>Every 15&ndash;30 minutes, arr apps check RSS feeds for new releases. If a release scores higher than your current file (e.g., a WEB Tier 01 replacing a Tier 03), it automatically downloads the upgrade.</p>
-        <p>The old file is replaced and the new one is hardlinked in. This continues until the cutoff CF score (10,000) is reached &mdash; effectively always looking for improvements.</p>
-      </div>
-    </div>
-  </section>
+  <div class="tab-panel" id="t-usage">
+    <div class="expand open"><div class="expand-head" onclick="tog(this)"><h4>&#x1F3AC; Requesting a Movie or Show</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p><strong>1.</strong> Open Jellyseerr and search for what you want.</p><p><strong>2.</strong> Click Request. It adds to Radarr (movies) or Sonarr (TV).</p><p><strong>3.</strong> All indexers are searched via Prowlarr. Results scored by custom formats.</p><p><strong>4.</strong> Best release downloaded through VPN tunnel.</p><p><strong>5.</strong> File hardlinked into library. Jellyfin picks it up. Bazarr fetches subtitles.</p><p style="color:var(--text-muted);margin-top:8px;">Total time: usually 5&ndash;30 minutes.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F3B5; Adding Music</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>Open Lidarr (<code>:8686</code>), search for an artist, add them. Uses MusicBrainz for metadata. Albums scored with Davo's custom formats: CD rips and preferred groups score highest.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F4DA; Books &amp; Audiobooks</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>Enable profiles in .env (<code>COMPOSE_PROFILES=kavita,audiobookshelf</code>), restart. Open LazyLibrarian (<code>:5299</code>), add authors. PostProcessor sorts ebooks to Kavita and audiobooks to Audiobookshelf every 10 minutes.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F3AE; Games</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>Open QuestArr (<code>:5002</code>), search, pick a release. A background script (game-import.sh) moves completed downloads to the library every 15 minutes with 9 safety checks.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F504; How Upgrades Work</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>Every 15&ndash;30 minutes, RSS feeds are checked. If a release scores higher than your current file, the upgrade downloads automatically. Old file replaced, new one hardlinked. Keeps improving until the quality ceiling is reached.</p></div></div>
+  </div>
 
   <!-- COMMANDS -->
-  <section class="guide-section" id="guide-commands">
-    <h2 class="mb-4">CLI Command Reference</h2>
-    <p class="text-dim mb-4">Every command starts with <code>arr</code>. Tab completion is available for Bash.</p>
-
+  <div class="tab-panel" id="t-commands">
+    <p style="color:var(--text-dim);margin-bottom:16px;">Every command starts with <code>arr</code>. Tab completion available.</p>
     <div class="cmd-grid">
-      <div class="cmd-card">
-        <div class="cmd-name">arr setup</div>
-        <div class="cmd-desc">First-time initialization wizard (6 steps)</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr status</div>
-        <div class="cmd-desc">Container health dashboard with profiles</div>
-        <div class="cmd-alias">alias: arr st</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr update</div>
-        <div class="cmd-desc">Pull latest code + images, restart changed containers</div>
-        <div class="cmd-alias">alias: arr up</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr doctor</div>
-        <div class="cmd-desc">6-check diagnostic with auto-fix</div>
-        <div class="cmd-alias">alias: arr doc</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr health</div>
-        <div class="cmd-desc">Parallel API health check (15 endpoints)</div>
-        <div class="cmd-alias">alias: arr hp</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr downloads</div>
-        <div class="cmd-desc">Live TUI dashboard with progress bars</div>
-        <div class="cmd-alias">alias: arr dl &middot; flags: --once --live</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr vpn</div>
-        <div class="cmd-desc">VPN tunnel status and IP geolocation</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr logs [service]</div>
-        <div class="cmd-desc">View service logs (add -f to follow)</div>
-        <div class="cmd-alias">alias: arr log</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr restart [target]</div>
-        <div class="cmd-desc">Restart all, one service, or groups (vpn, downloads)</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr start [service]</div>
-        <div class="cmd-desc">Start all services or a specific one</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr stop [service]</div>
-        <div class="cmd-desc">Stop all services or a specific one</div>
-      </div>
-      <div class="cmd-card">
-        <div class="cmd-name">arr backup</div>
-        <div class="cmd-desc">Backup configs &middot; --list &middot; --prune N</div>
-        <div class="cmd-alias">alias: arr bk</div>
-      </div>
+      <div class="cmd-card"><div class="cmd-name">arr setup</div><div class="cmd-desc">First-time initialization (6 steps)</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr status</div><div class="cmd-desc">Container health dashboard</div><div class="cmd-alias">alias: st</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr update</div><div class="cmd-desc">Pull code + images, restart changed</div><div class="cmd-alias">alias: up</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr doctor</div><div class="cmd-desc">6-check diagnostic with auto-fix</div><div class="cmd-alias">alias: doc</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr health</div><div class="cmd-desc">15 parallel API health checks</div><div class="cmd-alias">alias: hp</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr downloads</div><div class="cmd-desc">Live TUI with progress bars</div><div class="cmd-alias">alias: dl &middot; --once --live</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr vpn</div><div class="cmd-desc">VPN tunnel status + geolocation</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr logs [svc]</div><div class="cmd-desc">View logs (-f to follow)</div><div class="cmd-alias">alias: log</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr restart [target]</div><div class="cmd-desc">All, one service, or groups</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr start [svc]</div><div class="cmd-desc">Start all or specific service</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr stop [svc]</div><div class="cmd-desc">Stop all or specific service</div></div>
+      <div class="cmd-card"><div class="cmd-name">arr backup</div><div class="cmd-desc">Backup configs &middot; --list &middot; --prune N</div><div class="cmd-alias">alias: bk</div></div>
     </div>
-  </section>
+  </div>
 
   <!-- TIPS -->
-  <section class="guide-section" id="guide-tips">
-    <h2 class="mb-4">Tips &amp; Tricks</h2>
+  <div class="tab-panel" id="t-tips">
+    <div class="expand open"><div class="expand-head" onclick="tog(this)"><h4>&#x1F4A1; Check VPN First</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>If downloads aren't working, start with <code>arr vpn</code>. Shows tunnel status, public IP, and whether download clients are reachable.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F4A1; Run Doctor Regularly</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p><code>arr doctor</code> self-heals: missing dirs, outdated binary, missing env vars, wrong permissions. Run after updates.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F4A1; VPN Group Restart</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p><code>arr restart vpn</code> restarts Gluetun, waits 10s for tunnel, then restarts both download clients in the correct order.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F4A1; Back Up Before Updates</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p><code>arr backup</code> before <code>arr update</code>. Timestamped tar.gz of all configs. <code>arr backup --prune 5</code> keeps only the 5 most recent.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F4A1; Understanding Hardlinks</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>A 50 GB movie has two filenames but exists once on disk. One in downloads (for seeding), one in the library (for streaming). When the torrent is removed, the library copy persists. Works because all services mount the same root directory.</p></div></div>
+  </div>
 
-    <div class="detail-card open">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#128161; Check VPN Before Anything Else</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p>If downloads aren't working, start with <code>arr vpn</code>. It shows whether the tunnel is up, your public IP through the tunnel, and whether the download clients are reachable.</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#128161; Use <code>arr doctor</code> Regularly</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p>Doctor self-heals most common issues: missing directories, outdated CLI binary, missing .env variables, wrong permissions. Run it after updates or if something feels off.</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#128161; VPN Group Restart</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p><code>arr restart vpn</code> restarts Gluetun, waits 10 seconds for the tunnel to establish, then restarts both download clients. This is the correct order &mdash; restarting download clients without the VPN would leave them without network access.</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#128161; Back Up Before Updates</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p>Run <code>arr backup</code> before <code>arr update</code>. Backups are timestamped tar.gz files of all service configs. Use <code>arr backup --prune 5</code> to keep only the 5 most recent.</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#128161; Understanding Hardlinks</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p>A 50 GB movie exists once on disk but has two filenames &mdash; one in the download directory (for seeding) and one in the media library (for streaming). When the torrent is removed, only one link is deleted; the library copy persists.</p>
-        <p>This only works because every service mounts the same root directory (<code>DATA_ROOT:/data</code>). If you use separate mounts, hardlinks break and files get <em>copied</em> instead, doubling disk usage.</p>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <p>arr-barr &mdash; Pandai Technologies</p>
-  </footer>
+  <footer><p>arr-barr &mdash; Pandai Technologies</p></footer>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     ARCHITECTURE PAGE
-     ═══════════════════════════════════════════ -->
-<div class="page" id="page-architecture">
+<!-- ══════════════════════════════════════════════════════
+     PAGE: DEEP DIVE
+     ══════════════════════════════════════════════════════ -->
+<div class="page" id="p-deep">
+  <div class="page-header"><h1>Below Deck</h1><p>The complete technical architecture behind the operation</p></div>
 
-  <section class="arch-hero">
-    <h1>Deep Dive</h1>
-    <p class="text-dim mt-1" style="font-size: 1.1rem;">The complete technical architecture</p>
-  </section>
-
-  <!-- REQUEST-TO-STREAM FLOW -->
-  <section class="arch-section">
-    <h2>Request to Stream: The Complete Flow</h2>
-    <p class="text-dim mb-4">Every piece of media follows this journey. Each step is automated.</p>
-
-    <div class="flow-diagram" id="mainFlow">
-      <div class="flow-step">
-        <div class="flow-line"></div>
-        <div class="flow-content">
-          <div class="flow-label accent-mauve">1 &mdash; Request</div>
-          <h4>User requests content</h4>
-          <p>Via Jellyseerr (browse by poster, click request) or directly in the arr app's UI. The item is added to the wanted list.</p>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-line"></div>
-        <div class="flow-content">
-          <div class="flow-label accent-sapphire">2 &mdash; Search</div>
-          <h4>All indexers queried in parallel</h4>
-          <p>The arr app sends the search to Prowlarr, which fans out to 12 indexers simultaneously. FlareSolverr handles Cloudflare-protected sites with a headless browser. Results stream back.</p>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-line"></div>
-        <div class="flow-content">
-          <div class="flow-label accent-yellow">3 &mdash; Score &amp; Select</div>
-          <h4>Custom formats pick the best release</h4>
-          <p>Each result is scored against up to 48 custom formats. Release group tier, source quality, HDR format, streaming service, and more. Unwanted content (LQ, BR-DISK, AV1) is instantly rejected at -10,000. The highest-scoring release wins.</p>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-line"></div>
-        <div class="flow-content">
-          <div class="flow-label accent-red">4 &mdash; Download (VPN)</div>
-          <h4>Fetched through encrypted tunnel</h4>
-          <p>The release is sent to Transmission (torrents) or SABnzbd (usenet), both running inside Gluetun's VPN tunnel. All traffic is WireGuard-encrypted. Kill switch active.</p>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-line"></div>
-        <div class="flow-content">
-          <div class="flow-label accent-peach">5 &mdash; Import &amp; Organize</div>
-          <h4>Hardlinked into the library</h4>
-          <p>Torrents are hardlinked (zero extra space, keeps seeding). Usenet files are moved (staging cleared). Files are renamed per TRaSH naming convention with quality tags, release group, and media info.</p>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-line"></div>
-        <div class="flow-content">
-          <div class="flow-label accent-green">6 &mdash; Stream</div>
-          <h4>Available in Jellyfin</h4>
-          <p>Jellyfin detects the new file, fetches metadata, and makes it available. Bazarr automatically downloads subtitles. The content appears in "Recently Added" and is ready to watch.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- NETWORK ZONES -->
-  <section class="arch-section">
+  <div class="arch-section">
     <h2>Network Architecture</h2>
-    <p class="text-dim mb-4">Three isolated network zones with strict traffic separation</p>
-
-    <div class="zone-diagram">
-      <div class="zone zone-vpn">
-        <h4>&#128274; VPN Tunnel</h4>
-        <p style="font-size: 0.82rem; color: var(--maroon); margin-bottom: 0.75rem;">
-          All download traffic encrypted.<br>Kill switch blocks leaks.
-        </p>
-        <div class="zone-services">
-          <span class="zone-chip">Gluetun</span>
-          <span class="zone-chip">Transmission</span>
-          <span class="zone-chip">SABnzbd</span>
-        </div>
-      </div>
-
-      <div class="zone zone-bridge">
-        <h4>&#128230; Docker Bridge</h4>
-        <p style="font-size: 0.82rem; color: var(--blue); margin-bottom: 0.75rem;">
-          Services talk by name.<br>Search traffic direct (no VPN).
-        </p>
-        <div class="zone-services">
-          <span class="zone-chip">Radarr</span>
-          <span class="zone-chip">Sonarr</span>
-          <span class="zone-chip">Lidarr</span>
-          <span class="zone-chip">Prowlarr</span>
-          <span class="zone-chip">Bazarr</span>
-          <span class="zone-chip">Seerr</span>
-          <span class="zone-chip">QuestArr</span>
-          <span class="zone-chip">+3 more</span>
-        </div>
-      </div>
-
-      <div class="zone zone-host">
-        <h4>&#127968; Host Network</h4>
-        <p style="font-size: 0.82rem; color: var(--green); margin-bottom: 0.75rem;">
-          Direct host access.<br>Max streaming performance.
-        </p>
-        <div class="zone-services">
-          <span class="zone-chip">Jellyfin</span>
-        </div>
-      </div>
+    <p style="color:var(--text-dim);margin-bottom:14px;">Three isolated zones with strict traffic separation.</p>
+    <div class="zone-grid">
+      <div class="zone z-vpn"><h4>&#x1F512; VPN Tunnel</h4><p style="font-size:0.78rem;color:var(--red);margin-bottom:10px;">All downloads encrypted. Kill switch blocks leaks.</p><div class="zone-chips"><span class="zone-chip">Gluetun</span><span class="zone-chip">Transmission</span><span class="zone-chip">SABnzbd</span></div></div>
+      <div class="zone z-bridge"><h4>&#x1F4E6; Docker Bridge</h4><p style="font-size:0.78rem;color:var(--indigo);margin-bottom:10px;">Services talk by name. Search traffic direct.</p><div class="zone-chips"><span class="zone-chip">Radarr</span><span class="zone-chip">Sonarr</span><span class="zone-chip">Lidarr</span><span class="zone-chip">Prowlarr</span><span class="zone-chip">Bazarr</span><span class="zone-chip">Seerr</span><span class="zone-chip">+4</span></div></div>
+      <div class="zone z-host"><h4>&#x1F3E0; Host Network</h4><p style="font-size:0.78rem;color:var(--green);margin-bottom:10px;">Direct access for max streaming performance.</p><div class="zone-chips"><span class="zone-chip">Jellyfin</span></div></div>
     </div>
+    <h3>Kill Switch Rules</h3>
+    <p style="color:var(--text-dim);font-size:0.9rem;">Default policy: <strong>DROP</strong>. Only three types of outbound traffic allowed:</p>
+    <ul style="margin:10px 0;padding-left:20px;color:var(--text-dim);font-size:0.88rem;"><li><strong style="color:var(--green);">VPN tunnel</strong> &mdash; all internet traffic must exit through WireGuard</li><li><strong style="color:var(--indigo);">Docker internal</strong> &mdash; container-to-container communication</li><li><strong style="color:var(--amber);">WireGuard handshake</strong> &mdash; to re-establish if tunnel drops</li></ul>
+    <p style="color:var(--text-dim);font-size:0.88rem;">Everything else silently dropped. IPv6 fully blocked. Auto-restart reconnects within seconds.</p>
+  </div>
 
-    <h3>VPN Kill Switch</h3>
-    <p class="text-dim">The firewall uses a default DROP policy. Only three types of outbound traffic are allowed:</p>
-    <ul style="margin: 1rem 0; padding-left: 1.5rem; color: var(--subtext0);">
-      <li><strong class="accent-green">VPN tunnel</strong> &mdash; all internet traffic must exit through WireGuard</li>
-      <li><strong class="accent-blue">Docker internal</strong> &mdash; container-to-container communication</li>
-      <li><strong class="accent-peach">WireGuard handshake</strong> &mdash; to re-establish the tunnel if it drops</li>
-    </ul>
-    <p class="text-dim">Everything else is silently dropped. IPv6 is fully blocked. If the tunnel goes down, download clients lose <em>all</em> internet access until it recovers (auto-restart enabled).</p>
-  </section>
-
-  <!-- HARDLINKS -->
-  <section class="arch-section">
+  <div class="arch-section">
     <h2>Hardlink Architecture</h2>
-    <p class="text-dim mb-4">The single-mount design that eliminates duplicate disk usage</p>
-
-    <div class="hardlink-visual">
-      <div class="hl-box hl-downloads">
-        <h5>Downloads</h5>
-        <p>/data/downloads/torrents/<br>radarr/Movie.mkv</p>
-        <p class="mt-1 text-dim" style="font-size: 0.75rem;">Torrent keeps seeding here</p>
-      </div>
-      <div class="hl-arrow">
-        <div class="hl-arrow-line">&#10230;</div>
-        <div class="hl-arrow-text">hardlink</div>
-        <div style="font-size: 0.72rem; color: var(--overlay0);">Same inode</div>
-        <div style="font-size: 0.72rem; color: var(--overlay0);">Zero extra space</div>
-      </div>
-      <div class="hl-box hl-media">
-        <h5>Library</h5>
-        <p>/data/media/movies/<br>Movie (2024)/Movie.mkv</p>
-        <p class="mt-1 text-dim" style="font-size: 0.75rem;">Jellyfin streams from here</p>
-      </div>
+    <p style="color:var(--text-dim);margin-bottom:14px;">The single-mount design that eliminates duplicate disk usage.</p>
+    <div class="hl-viz">
+      <div class="hl-box hl-dl"><h5>Downloads</h5><p>/data/downloads/torrents/<br>radarr/Movie.mkv</p><p style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;">Torrent keeps seeding</p></div>
+      <div class="hl-arrow"><div class="hl-arrow-icon">&#x279C;</div><div class="hl-arrow-text">Hardlink</div><div style="font-size:0.7rem;color:var(--text-muted);">Same inode, zero extra space</div></div>
+      <div class="hl-box hl-lib"><h5>Library</h5><p>/data/media/movies/<br>Movie (2024)/Movie.mkv</p><p style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;">Jellyfin streams from here</p></div>
     </div>
+    <p style="color:var(--text-dim);font-size:0.88rem;">Works because all containers mount <code>DATA_ROOT</code> as <code>/data</code>. Downloads and media on the same filesystem = kernel can hardlink. A 50 GB file uses 50 GB total, not 100 GB.</p>
+  </div>
 
-    <p class="text-dim">This works because all containers mount <code>DATA_ROOT</code> as <code>/data</code>. Downloads and media are on the same filesystem, so the kernel can create a second filename pointing to the same data blocks. A 50 GB file uses 50 GB total &mdash; not 100 GB.</p>
-
-    <h3>Three Mount Tiers</h3>
-    <div class="grid-2 mt-2">
-      <div style="background: var(--surface0); padding: 1rem; border-radius: var(--radius-sm); border-left: 3px solid var(--green);">
-        <strong class="accent-green">Tier 1: Full /data</strong>
-        <p class="text-sm text-dim mt-1">Transmission, SABnzbd, Radarr, Sonarr, Lidarr, Bazarr, LazyLibrarian</p>
-        <p class="text-sm text-dim">Read-write access to both downloads and media. Can hardlink.</p>
-      </div>
-      <div style="background: var(--surface0); padding: 1rem; border-radius: var(--radius-sm); border-left: 3px solid var(--blue);">
-        <strong class="accent-blue">Tier 2: Read-only media</strong>
-        <p class="text-sm text-dim mt-1">Jellyfin, Kavita, Audiobookshelf</p>
-        <p class="text-sm text-dim">Only see their specific media directories. Cannot modify files.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- QUALITY SCORING -->
-  <section class="arch-section">
+  <div class="arch-section">
     <h2>Quality Scoring in Action</h2>
-    <p class="text-dim mb-4">See how custom formats score real releases</p>
+    <p style="color:var(--text-dim);margin-bottom:14px;">97 custom formats across Radarr (48), Sonarr (44), and Lidarr (5) score every release. The highest score wins.</p>
 
-    <h3>Movie Example: The Matrix</h3>
-    <div class="scoring-demo">
-      <div class="score-release winner">
-        <div class="score-name">The.Matrix.1999.IMAX.Bluray.1080p.x264-DON</div>
-        <div class="score-cfs">
-          <span class="score-cf cf-pos">HD Bluray Tier 01 +1800</span>
-          <span class="score-cf cf-pos">IMAX +800</span>
-        </div>
-        <div class="score-total positive">Score: 2600 &#10003; WINNER</div>
-      </div>
-      <div class="score-release">
-        <div class="score-name">The.Matrix.1999.Bluray.1080p.x264-DON</div>
-        <div class="score-cfs">
-          <span class="score-cf cf-pos">HD Bluray Tier 01 +1800</span>
-        </div>
-        <div class="score-total positive">Score: 1800 &#10003;</div>
-      </div>
-      <div class="score-release">
-        <div class="score-name">The.Matrix.1999.1080p.WEB-DL.AMZN-NTb</div>
-        <div class="score-cfs">
-          <span class="score-cf cf-pos">WEB Tier 01 +1700</span>
-          <span class="score-cf cf-tag">AMZN +0</span>
-        </div>
-        <div class="score-total positive">Score: 1700 &#10003;</div>
-      </div>
-      <div class="score-release rejected">
-        <div class="score-name">The.Matrix.1999.CAM.LQ-BadGroup</div>
-        <div class="score-cfs">
-          <span class="score-cf cf-neg">LQ -10000</span>
-        </div>
-        <div class="score-total negative">Score: -10000 &#10007; REJECTED</div>
-      </div>
+    <h3>Movie Example</h3>
+    <div class="score-demo">
+      <div class="score-rel win"><div class="score-name">The.Matrix.1999.IMAX.Bluray.1080p.x264-DON</div><div class="score-tags"><span class="stag stag-pos">HD Bluray Tier 01 +1800</span><span class="stag stag-pos">IMAX +800</span></div><div class="score-total pos">Score: 2600 &#10003; WINNER</div></div>
+      <div class="score-rel"><div class="score-name">The.Matrix.1999.1080p.WEB-DL.AMZN-NTb</div><div class="score-tags"><span class="stag stag-pos">WEB Tier 01 +1700</span><span class="stag stag-tag">AMZN +0</span></div><div class="score-total pos">Score: 1700 &#10003;</div></div>
+      <div class="score-rel rej"><div class="score-name">The.Matrix.1999.CAM.LQ-BadGroup</div><div class="score-tags"><span class="stag stag-neg">LQ -10000</span></div><div class="score-total neg">Score: -10000 &#10007; REJECTED</div></div>
     </div>
 
-    <h3>TV Example: Premium 4K</h3>
-    <div class="scoring-demo">
-      <div class="score-release winner">
-        <div class="score-name">Show.S01E01.2160p.DSNP.WEB-DL.DV.HDR.Atmos-FLUX</div>
-        <div class="score-cfs">
-          <span class="score-cf cf-pos">WEB Tier 01 +1700</span>
-          <span class="score-cf cf-pos">Disney+ +75</span>
-          <span class="score-cf cf-pos">DV Boost +1000</span>
-          <span class="score-cf cf-pos">HDR +500</span>
-          <span class="score-cf cf-pos">UHD Boost +75</span>
-        </div>
-        <div class="score-total positive">Score: 3350 &#10003; WINNER</div>
-      </div>
-      <div class="score-release rejected">
-        <div class="score-name">Show.S01E01.2160p.WEB-DL.SDR-BadGroup</div>
-        <div class="score-cfs">
-          <span class="score-cf cf-neg">SDR (4K) -10000</span>
-        </div>
-        <div class="score-total negative">Score: -10000 &#10007; REJECTED (want HDR for 4K)</div>
-      </div>
+    <h3>TV Example</h3>
+    <div class="score-demo">
+      <div class="score-rel win"><div class="score-name">Show.S01E01.2160p.DSNP.WEB-DL.DV.HDR.Atmos-FLUX</div><div class="score-tags"><span class="stag stag-pos">WEB Tier 01 +1700</span><span class="stag stag-pos">Disney+ +75</span><span class="stag stag-pos">DV +1000</span><span class="stag stag-pos">HDR +500</span><span class="stag stag-pos">UHD +75</span></div><div class="score-total pos">Score: 3350 &#10003; WINNER</div></div>
+      <div class="score-rel rej"><div class="score-name">Show.S01E01.2160p.WEB-DL.SDR-BadGroup</div><div class="score-tags"><span class="stag stag-neg">SDR (4K) -10000</span></div><div class="score-total neg">Score: -10000 &#10007; REJECTED</div></div>
     </div>
-  </section>
+  </div>
 
-  <!-- MEDIA PIPELINES -->
-  <section class="arch-section">
+  <div class="arch-section">
     <h2>Media Pipelines</h2>
-    <p class="text-dim mb-4">Each media type has its own dedicated pipeline</p>
+    <p style="color:var(--text-dim);margin-bottom:14px;">Each media type has a dedicated pipeline.</p>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F3AC; Movies &mdash; Radarr (48 Custom Formats)</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>6 release group tiers, IMAX/Special Edition boosts, 14 unwanted-content rejectors. Cutoff: Bluray-1080p, upgrades indefinitely. Naming follows TRaSH Guide. Categories: torrents &rarr; <code>radarr/</code>, usenet &rarr; <code>movies/</code>. Post-import: Bazarr fetches subtitles, Jellyfin detects new file.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F4FA; TV Shows &mdash; Sonarr (44 Custom Formats)</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>Streaming services score +75 each (17 services), DV Boost +1000, HDR +500. Season pack logic: &gt;50% missing &rarr; prefer full season. Supports anime with absolute numbering. Cutoff: WEB 2160p.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F3B5; Music &mdash; Lidarr (5 Custom Formats, Davo's Guide)</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>CD +500, Preferred Groups (DeVOiD, PERFECT, ENRiCH) +500, WEB +200, Lossless +100, Vinyl -10000. Min score 1 &mdash; unknown releases skipped. Cutoff: Lossless. Uses MusicBrainz metadata.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F4DA; Books &amp; Audiobooks &mdash; LazyLibrarian</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>PostProcessor every 10 min sorts by file type: .epub/.pdf &rarr; /books (Kavita reads), .mp3/.m4b &rarr; /audiobooks (Audiobookshelf reads). Docker mods add Calibre + FFmpeg. GoodReads metadata.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F3AE; Games &mdash; QuestArr + game-import.sh</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>QuestArr is search-only (IGDB metadata). game-import.sh runs every 15 min via cron with 9 safety layers: API completion check, settling time, duplicate detection, empty check, lockfile. Torrent games hardlinked, usenet games moved.</p></div></div>
+    <div class="expand"><div class="expand-head" onclick="tog(this)"><h4>&#x1F4AC; Subtitles &mdash; Bazarr</h4><span class="chevron">&#9660;</span></div><div class="expand-body"><p>Monitors Radarr/Sonarr for new imports. Queries providers, scores candidates against media metadata (hash, title, year, group). Places .srt alongside media files. Upgrade window: 7 days. Auto-sync timing correction for low-score matches.</p></div></div>
+  </div>
 
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#127909; Movies &mdash; Radarr</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p><strong>48 custom formats</strong> (TRaSH Guide) with 34 scored. 6 release group tiers, IMAX boosts, movie version detection.</p>
-        <p><strong>Cutoff:</strong> Bluray-1080p. Keeps upgrading toward higher-tier releases.</p>
-        <p><strong>Naming:</strong> <code>Movie Name (2024) [CFs][Quality][Audio][HDR][Video]-Group</code></p>
-        <p><strong>Categories:</strong> Torrents → <code>radarr/</code>, Usenet → <code>movies/</code></p>
-        <p><strong>Post-import:</strong> Bazarr auto-fetches subtitles, Jellyfin detects new file.</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#128250; TV Shows &mdash; Sonarr</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p><strong>44 custom formats</strong> with streaming service scoring (+75 each for 17 services), HDR/DV boosts, and WEB release group tiers.</p>
-        <p><strong>Cutoff:</strong> WEB 2160p (future-proofed for 4K TV content).</p>
-        <p><strong>Season packs:</strong> When &gt;50% of episodes are missing, prefers downloading entire season.</p>
-        <p><strong>Anime support:</strong> 15 anime series with absolute numbering and language-aware naming.</p>
-        <p><strong>Categories:</strong> Torrents → <code>tv-sonarr/</code>, Usenet → <code>tv/</code></p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#127925; Music &mdash; Lidarr</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p><strong>5 custom formats</strong> (Davo's Guide): CD (+500), Preferred Groups (+500), WEB (+200), Lossless (+100), Vinyl (-10000).</p>
-        <p><strong>Min CF score: 1</strong> &mdash; releases must match at least one positive CF. Prevents grabbing random low-quality uploads.</p>
-        <p><strong>Cutoff:</strong> Lossless (FLAC, ALAC). Accepts lossy initially, upgrades to lossless.</p>
-        <p><strong>Metadata:</strong> MusicBrainz. <strong>Artist folder:</strong> <code>{Artist NameThe}</code> (sorts "Beatles, The" under B).</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#128218; Books &amp; Audiobooks &mdash; LazyLibrarian</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p><strong>PostProcessor</strong> runs every 10 minutes, sorting by file type: ebooks (.epub/.pdf/.mobi) → <code>/media/books/</code>, audio (.mp3/.m4b) → <code>/media/audiobooks/</code>.</p>
-        <p><strong>Metadata:</strong> GoodReads. Generates cover art and .opf metadata sidecars.</p>
-        <p><strong>Docker mods:</strong> Calibre (ebook conversion) + FFmpeg (audio processing).</p>
-        <p><strong>Readers:</strong> Kavita (ebooks, browser-based) and Audiobookshelf (audiobooks, with mobile apps).</p>
-      </div>
-    </div>
-
-    <div class="detail-card">
-      <div class="detail-header" onclick="toggleDetail(this)">
-        <h4>&#127918; Games &mdash; QuestArr</h4>
-        <span class="detail-chevron">&#9660;</span>
-      </div>
-      <div class="detail-body">
-        <p><strong>Search-only</strong> &mdash; no built-in import engine. Uses IGDB for metadata.</p>
-        <p><strong>Import:</strong> <code>game-import.sh</code> runs every 15 minutes via cron, with 9 safety layers: API completion check, settling time, duplicate detection, empty check, lockfile, and more.</p>
-        <p><strong>Hardlinks:</strong> Torrent games are hardlinked, usenet games are moved.</p>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <p>arr-barr &mdash; Pandai Technologies</p>
-    <p class="mt-1" style="font-size: 0.78rem;">Open source. Self-hosted. Your media, your rules.</p>
-  </footer>
+  <footer><p>arr-barr &mdash; Pandai Technologies</p><p style="margin-top:4px;font-size:0.72rem;">Open source. Self-hosted. Every crew needs a port.</p></footer>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     JAVASCRIPT
-     ═══════════════════════════════════════════ -->
 <script>
-/* Page navigation */
-function showPage(id) {
+function go(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  const page = document.getElementById('page-' + id);
-  if (page) {
-    page.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    // Trigger flow animations
-    setTimeout(() => animateFlowSteps(), 100);
-  }
-  // Highlight nav
+  const map = { landing: 'p-landing', guide: 'p-guide', deep: 'p-deep' };
+  const el = document.getElementById(map[id]);
+  if (el) { el.classList.add('active'); window.scrollTo({top:0,behavior:'instant'}); }
   document.querySelectorAll('.nav-link').forEach(l => {
-    if (l.textContent.toLowerCase().includes(
-      id === 'landing' ? 'home' : id === 'guide' ? 'started' : 'deep'
-    )) l.classList.add('active');
+    const t = l.textContent.toLowerCase();
+    if ((id==='landing'&&t.includes('home'))||(id==='guide'&&t.includes('guide'))||(id==='deep'&&t.includes('below')))
+      l.classList.add('active');
   });
-  // Close mobile menu
   document.getElementById('navLinks').classList.remove('open');
 }
-
-/* Mobile menu */
-function toggleMenu() {
-  document.getElementById('navLinks').classList.toggle('open');
+function tab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('t-'+id);
+  if (el) el.classList.add('active');
+  btn.classList.add('active');
 }
-
-/* Guide sub-navigation */
-function showGuideSection(id) {
-  document.querySelectorAll('.guide-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.guide-nav-btn').forEach(b => b.classList.remove('active'));
-  const section = document.getElementById('guide-' + id);
-  if (section) section.classList.add('active');
-  event.target.classList.add('active');
+function tog(head) { head.closest('.expand').classList.toggle('open'); }
+function copy(btn) {
+  const t = btn.previousElementSibling.textContent;
+  navigator.clipboard.writeText(t).then(() => { btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy',1500); });
 }
-
-/* Expandable detail cards */
-function toggleDetail(header) {
-  header.closest('.detail-card').classList.toggle('open');
-}
-
-/* Copy command */
-function copyCmd(btn) {
-  const text = btn.previousElementSibling.textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy', 1500);
-  });
-}
-
-/* Service info panel */
-function showServiceInfo(node) {
-  const panel = document.getElementById('serviceInfoPanel');
-  const text = document.getElementById('serviceInfoText');
-  text.textContent = node.getAttribute('data-info');
-  panel.style.display = 'block';
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  // Highlight selected
-  document.querySelectorAll('.topo-node').forEach(n => n.style.outline = 'none');
-  node.style.outline = '2px solid var(--sapphire)';
-  node.style.outlineOffset = '2px';
-}
-
-/* Scroll-triggered flow step animation */
-function animateFlowSteps() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), i * 80);
-      }
-    });
-  }, { threshold: 0.2 });
-
-  document.querySelectorAll('.flow-step').forEach(step => {
-    step.classList.remove('visible');
-    observer.observe(step);
-  });
-}
-
-/* Nav scroll effect */
 window.addEventListener('scroll', () => {
   document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 10);
+  updateRail();
 });
 
-/* Init */
-document.addEventListener('DOMContentLoaded', () => {
-  animateFlowSteps();
-});
+/* Side rail */
+const railIds = ['hero','flow','crew','vpn','sec'];
+const railDots = document.querySelectorAll('.rail-dot');
+
+function railTo(id) {
+  const el = document.getElementById('s-' + id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function updateRail() {
+  const rail = document.getElementById('sideRail');
+  const onLanding = document.getElementById('p-landing').classList.contains('active');
+  rail.classList.toggle('visible', onLanding && window.scrollY > 200);
+  if (!onLanding) return;
+
+  let activeIdx = 0;
+  for (let i = railIds.length - 1; i >= 0; i--) {
+    const el = document.getElementById('s-' + railIds[i]);
+    if (el && el.getBoundingClientRect().top < window.innerHeight * 0.4) {
+      activeIdx = i; break;
+    }
+  }
+  railDots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
+}
+
+/* ═══ Hero Terminal Animation ═══ */
+const D = 't-dim', G = 't-green', C = 't-cyan', A = 't-amber';
+const s = (c,t) => '<span class="'+c+'">'+t+'</span>';
+const dot = c => s(c,'&#x25CF;');
+const pad = t => s(D, t);
+const scenes = [
+  { lines: [
+    { type:'prompt', text:'$ arr health' },
+    { type:'out', delay:400, text:dot(G)+' gluetun '+pad('............')+' '+s(G,'tunnel up')+pad('        23ms') },
+    { type:'out', delay:150, text:dot(G)+' transmission '+pad('........')+' '+s(G,'healthy')+pad('          41ms') },
+    { type:'out', delay:150, text:dot(G)+' sabnzbd '+pad('............')+' '+s(G,'healthy')+pad('          38ms') },
+    { type:'out', delay:150, text:dot(G)+' radarr '+pad('.............')+' '+s(G,'healthy')+pad('          52ms') },
+    { type:'out', delay:150, text:dot(G)+' sonarr '+pad('.............')+' '+s(G,'healthy')+pad('          47ms') },
+    { type:'out', delay:150, text:dot(G)+' lidarr '+pad('.............')+' '+s(G,'healthy')+pad('          44ms') },
+    { type:'out', delay:150, text:dot(G)+' jellyfin '+pad('...........')+' '+s(G,'healthy')+pad('          31ms') },
+    { type:'out', delay:300, text:'' },
+    { type:'out', delay:100, text:s(G,'15/15 crew members reporting')+pad('         all systems nominal') },
+  ]},
+  { lines: [
+    { type:'prompt', text:'$ arr vpn' },
+    { type:'out', delay:500, text:dot(G)+' '+s(C,'Tunnel')+' '+pad('.....................')+' connected' },
+    { type:'out', delay:200, text:'  Protocol '+pad('...................')+' WireGuard' },
+    { type:'out', delay:200, text:'  Public IP '+pad('....................')+' '+s(C,'hidden') },
+    { type:'out', delay:200, text:'  Location '+pad('...................')+' Netherlands' },
+    { type:'out', delay:200, text:'  Kill switch '+pad('................')+' '+s(G,'active') },
+    { type:'out', delay:200, text:'  DNS '+pad('.........................')+' encrypted' },
+    { type:'out', delay:400, text:'' },
+    { type:'out', delay:100, text:pad('All download traffic routed through encrypted tunnel') },
+  ]},
+  { lines: [
+    { type:'prompt', text:'$ requesting "Dune: Part Two (2024)"' },
+    { type:'out', delay:600, text:s(A,'Radarr')+pad(' searching 12 indexers across 4 usenet + 8 torrent...') },
+    { type:'out', delay:800, text:pad('found 47 results \u2014 scoring against 48 custom formats...') },
+    { type:'out', delay:400, text:s(G,'&#x2713;')+' Dune.Part.Two.2024.2160p.IMAX.WEB-DL.DV.HDR.Atmos-FLUX' },
+    { type:'out', delay:200, text:'  '+s(G,'+1700')+' WEB Tier 01 \u00b7 '+s(G,'+800')+' IMAX \u00b7 '+s(G,'+500')+' HDR \u00b7 '+s(G,'+75')+' DSNP' },
+    { type:'out', delay:200, text:'  Score: '+s(G,'3075')+' \u2014 grabbing via tunnel '+pad('............')+' '+s(C,'encrypted') },
+    { type:'out', delay:600, text:pad('hardlinked to library (0 extra bytes) \u00b7 Jellyfin updated \u00b7 subs queued') },
+    { type:'out', delay:200, text:s(G,'&#x25CF; Ready to watch')+pad('                            4K Dolby Vision') },
+  ]},
+  { lines: [
+    { type:'prompt', text:'$ arr downloads --once' },
+    { type:'out', delay:400, text:s(C,'&#x25BC; Downloading')+pad(' ......................................')+' 2 active' },
+    { type:'out', delay:200, text:'  Akira.1988.UHD.BluRay.REMUX.DTS-HD.MA '+pad('.')+' '+s(G,'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a')+pad('\u2591\u2591')+' '+s(G,'87%')+' 42MB/s' },
+    { type:'out', delay:200, text:'  Ted.Lasso.S03.1080p.ATVP.WEB-DL.Atmos '+pad('.')+' '+s(A,'\u2588\u2588\u2588')+pad('\u2591\u2591\u2591\u2591\u2591\u2591\u2591')+' '+s(A,'34%')+' 28MB/s' },
+    { type:'out', delay:200, text:'  DAMN.2017.FLAC.CD-DeVOiD '+pad('...............')+' '+s(G,'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588')+pad('\u2591')+' '+s(G,'95%')+' 11MB/s' },
+    { type:'out', delay:300, text:'' },
+    { type:'out', delay:100, text:s(C,'&#x25B2; Seeding')+pad(' .........................................')+' 12 active' },
+    { type:'out', delay:100, text:pad('  ratio 2.4 \u00b7 uploaded 847 GB \u00b7 tunnel ')+dot(G)+s(G,' up')+pad(' \u00b7 70 MB/s') },
+  ]},
+];
+let sceneIdx = 0, termRunning = false;
+async function runScene(scene) {
+  const body = document.getElementById('termBody');
+  if (!body) return; body.innerHTML = '';
+  for (const line of scene.lines) {
+    if (!document.getElementById('p-landing').classList.contains('active')) return;
+    const div = document.createElement('div'); div.className = 't-line'; body.appendChild(div);
+    if (line.type === 'prompt') {
+      const parts = line.text.split(' '), prompt = parts[0], cmd = parts.slice(1).join(' ');
+      div.innerHTML = '<span class="t-prompt">'+prompt+'</span> <span class="t-cmd"></span><span class="term-cursor"></span>';
+      const cmdEl = div.querySelector('.t-cmd'), cur = div.querySelector('.term-cursor');
+      for (let i = 0; i <= cmd.length; i++) { cmdEl.textContent = cmd.slice(0,i); await sleep(45); }
+      cur.remove(); await sleep(200);
+    } else { await sleep(line.delay||100); div.innerHTML = line.text; }
+    body.scrollTop = body.scrollHeight;
+  }
+}
+async function termLoop() {
+  if (termRunning) return; termRunning = true;
+  while (true) { await runScene(scenes[sceneIdx]); await sleep(3000); sceneIdx = (sceneIdx+1) % scenes.length; }
+}
+termLoop();
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 </script>
-
 </body>
 </html>

@@ -47,8 +47,8 @@ SAB_KEY="$(_extract_ini_key "$DATA_ROOT/config/sabnzbd/sabnzbd.ini" "api_key")"
 
 # ── Temp directory for parallel results ───────────────────────────────────────
 
-TMPDIR=$(mktemp -d /tmp/arr-dash-XXXXXX)
-cleanup() { rm -rf "$TMPDIR"; }
+DASH_TMPDIR=$(mktemp -d /tmp/arr-dash-XXXXXX)
+cleanup() { rm -rf "$DASH_TMPDIR"; }
 trap cleanup EXIT INT TERM
 
 # ── Profiles check ────────────────────────────────────────────────────────────
@@ -62,12 +62,12 @@ profile_active() {
         lazylibrarian|kavita|audiobookshelf)
             echo ",$PROFILES," | grep -q ",$svc," && return 0
             # Also check if container is actually running
-            [ -f "$TMPDIR/containers" ] && grep -q "^${svc}|running" "$TMPDIR/containers" && return 0
+            [ -f "$DASH_TMPDIR/containers" ] && grep -q "^${svc}|running" "$DASH_TMPDIR/containers" && return 0
             return 1
             ;;
         questarr)
             # Gaming is always in compose but may not be running
-            [ -f "$TMPDIR/containers" ] && grep -q "^${svc}|running" "$TMPDIR/containers" && return 0
+            [ -f "$DASH_TMPDIR/containers" ] && grep -q "^${svc}|running" "$DASH_TMPDIR/containers" && return 0
             return 1
             ;;
         *) return 0 ;;
@@ -80,17 +80,17 @@ profile_active() {
 
 # 1. Container states
 (
-    $DOCKER_CMD ps -a --format '{{.Names}}|{{.State}}' > "$TMPDIR/containers" 2>/dev/null || true
+    $DOCKER_CMD ps -a --format '{{.Names}}|{{.State}}' > "$DASH_TMPDIR/containers" 2>/dev/null || true
 ) &
 
 # 2. Disk usage
 (
-    df -P /volume1/data 2>/dev/null | awk 'NR==2{print $2"|"$3"|"$4"|"$5}' > "$TMPDIR/disk" || true
+    df -P /volume1/data 2>/dev/null | awk 'NR==2{print $2"|"$3"|"$4"|"$5}' > "$DASH_TMPDIR/disk" || true
 ) &
 
 # 3. VPN IP (via gluetun container)
 (
-    $DOCKER_CMD exec gluetun wget -qO- --timeout=3 https://ipinfo.io/json 2>/dev/null > "$TMPDIR/vpn" || true
+    $DOCKER_CMD exec gluetun wget -qO- --timeout=3 https://ipinfo.io/json 2>/dev/null > "$DASH_TMPDIR/vpn" || true
 ) &
 
 # 4. Health checks — all 15 endpoints in parallel
@@ -122,42 +122,42 @@ for svc in "${!HEALTH_URLS[@]}"; do
         if [ "$start_ns" != "0" ] && [ "$end_ns" != "0" ]; then
             ms=$(( (end_ns - start_ns) / 1000000 ))
         fi
-        echo "${code}|${expected}|${ms}" > "$TMPDIR/health_${svc}"
+        echo "${code}|${expected}|${ms}" > "$DASH_TMPDIR/health_${svc}"
     ) &
 done
 
 # 5. Radarr data
 (
     curl -s --max-time 3 "http://localhost:7878/api/v3/movie?apikey=${RADARR_KEY}" 2>/dev/null | \
-        python3 -c "import sys,json; print(len(json.load(sys.stdin)))" > "$TMPDIR/radarr_movies" 2>/dev/null || true
+        python3 -c "import sys,json; print(len(json.load(sys.stdin)))" > "$DASH_TMPDIR/radarr_movies" 2>/dev/null || true
 ) &
 (
     curl -s --max-time 3 "http://localhost:7878/api/v3/queue?apikey=${RADARR_KEY}&page=1&pageSize=1" 2>/dev/null | \
-        python3 -c "import sys,json; print(json.load(sys.stdin).get('totalRecords',0))" > "$TMPDIR/radarr_queue" 2>/dev/null || true
+        python3 -c "import sys,json; print(json.load(sys.stdin).get('totalRecords',0))" > "$DASH_TMPDIR/radarr_queue" 2>/dev/null || true
 ) &
 (
     curl -s --max-time 3 "http://localhost:7878/api/v3/wanted/missing?apikey=${RADARR_KEY}&page=1&pageSize=1" 2>/dev/null | \
-        python3 -c "import sys,json; print(json.load(sys.stdin).get('totalRecords',0))" > "$TMPDIR/radarr_missing" 2>/dev/null || true
+        python3 -c "import sys,json; print(json.load(sys.stdin).get('totalRecords',0))" > "$DASH_TMPDIR/radarr_missing" 2>/dev/null || true
 ) &
 
 # 6. Sonarr data
 (
     curl -s --max-time 3 "http://localhost:8989/api/v3/series?apikey=${SONARR_KEY}" 2>/dev/null | \
-        python3 -c "import sys,json; print(len(json.load(sys.stdin)))" > "$TMPDIR/sonarr_series" 2>/dev/null || true
+        python3 -c "import sys,json; print(len(json.load(sys.stdin)))" > "$DASH_TMPDIR/sonarr_series" 2>/dev/null || true
 ) &
 (
     curl -s --max-time 3 "http://localhost:8989/api/v3/queue?apikey=${SONARR_KEY}&page=1&pageSize=1" 2>/dev/null | \
-        python3 -c "import sys,json; print(json.load(sys.stdin).get('totalRecords',0))" > "$TMPDIR/sonarr_queue" 2>/dev/null || true
+        python3 -c "import sys,json; print(json.load(sys.stdin).get('totalRecords',0))" > "$DASH_TMPDIR/sonarr_queue" 2>/dev/null || true
 ) &
 (
     curl -s --max-time 3 "http://localhost:8989/api/v3/wanted/missing?apikey=${SONARR_KEY}&page=1&pageSize=1" 2>/dev/null | \
-        python3 -c "import sys,json; print(json.load(sys.stdin).get('totalRecords',0))" > "$TMPDIR/sonarr_missing" 2>/dev/null || true
+        python3 -c "import sys,json; print(json.load(sys.stdin).get('totalRecords',0))" > "$DASH_TMPDIR/sonarr_missing" 2>/dev/null || true
 ) &
 
 # 7. Lidarr data
 (
     curl -s --max-time 3 "http://localhost:8686/api/v1/artist?apikey=${LIDARR_KEY}" 2>/dev/null | \
-        python3 -c "import sys,json; print(len(json.load(sys.stdin)))" > "$TMPDIR/lidarr_artists" 2>/dev/null || true
+        python3 -c "import sys,json; print(len(json.load(sys.stdin)))" > "$DASH_TMPDIR/lidarr_artists" 2>/dev/null || true
 ) &
 
 # 8. Prowlarr indexers
@@ -169,7 +169,7 @@ d=json.load(sys.stdin)
 total=len(d)
 enabled=sum(1 for x in d if x.get('enable',False))
 print(f'{enabled}|{total}')
-" > "$TMPDIR/prowlarr_indexers" 2>/dev/null || true
+" > "$DASH_TMPDIR/prowlarr_indexers" 2>/dev/null || true
 ) &
 
 # 9. Bazarr badges
@@ -180,14 +180,14 @@ print(f'{enabled}|{total}')
 import sys,json
 d=json.load(sys.stdin)
 print(f'{d.get(\"episodes\",0)}|{d.get(\"movies\",0)}')
-" > "$TMPDIR/bazarr_badges" 2>/dev/null || true
+" > "$DASH_TMPDIR/bazarr_badges" 2>/dev/null || true
     fi
 ) &
 
 # 10. Jellyfin system info
 (
     curl -s --max-time 3 "http://localhost:8096/System/Info/Public" 2>/dev/null | \
-        python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('Version','?'))" > "$TMPDIR/jellyfin_ver" 2>/dev/null || true
+        python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('Version','?'))" > "$DASH_TMPDIR/jellyfin_ver" 2>/dev/null || true
 ) &
 
 # 11. Transmission
@@ -207,13 +207,13 @@ print(f'{d.get(\"episodes\",0)}|{d.get(\"movies\",0)}')
         curl -s --max-time 3 \
             -H "X-Transmission-Session-Id: $sid" \
             -d '{"method":"session-stats"}' \
-            http://localhost:9091/transmission/rpc 2>/dev/null > "$TMPDIR/trans_stats" || true
+            http://localhost:9091/transmission/rpc 2>/dev/null > "$DASH_TMPDIR/trans_stats" || true
 
         # Torrent list
         curl -s --max-time 3 \
             -H "X-Transmission-Session-Id: $sid" \
             -d '{"method":"torrent-get","arguments":{"fields":["name","status","percentDone","rateDownload","rateUpload","eta","uploadRatio","sizeWhenDone","leftUntilDone"]}}' \
-            http://localhost:9091/transmission/rpc 2>/dev/null > "$TMPDIR/trans_torrents" || true
+            http://localhost:9091/transmission/rpc 2>/dev/null > "$DASH_TMPDIR/trans_torrents" || true
     fi
 ) &
 
@@ -221,7 +221,7 @@ print(f'{d.get(\"episodes\",0)}|{d.get(\"movies\",0)}')
 (
     if [ -n "$SAB_KEY" ]; then
         curl -s --max-time 3 \
-            "http://localhost:8080/api?mode=queue&apikey=${SAB_KEY}&output=json" 2>/dev/null > "$TMPDIR/sab_queue" || true
+            "http://localhost:8080/api?mode=queue&apikey=${SAB_KEY}&output=json" 2>/dev/null > "$DASH_TMPDIR/sab_queue" || true
     fi
 ) &
 
@@ -237,7 +237,7 @@ for r in d.get('records',[]):
         title=r.get('sourceTitle','?')[:60]
         date=r.get('date','')
         print(f'{title}|{date}|Radarr')
-" > "$TMPDIR/radarr_history" 2>/dev/null || true
+" > "$DASH_TMPDIR/radarr_history" 2>/dev/null || true
 ) &
 (
     curl -s --max-time 3 \
@@ -250,7 +250,7 @@ for r in d.get('records',[]):
         title=r.get('sourceTitle','?')[:60]
         date=r.get('date','')
         print(f'{title}|{date}|Sonarr')
-" > "$TMPDIR/sonarr_history" 2>/dev/null || true
+" > "$DASH_TMPDIR/sonarr_history" 2>/dev/null || true
 ) &
 
 # ── Wait for ALL background jobs ─────────────────────────────────────────────
@@ -263,11 +263,11 @@ wait
 
 # Container states
 declare -A CTR_STATE
-if [ -f "$TMPDIR/containers" ]; then
+if [ -f "$DASH_TMPDIR/containers" ]; then
     while IFS='|' read -r cname cstate; do
         [ -z "$cname" ] && continue
         CTR_STATE["$cname"]="$cstate"
-    done < "$TMPDIR/containers"
+    done < "$DASH_TMPDIR/containers"
 fi
 
 # Count running containers
@@ -289,8 +289,8 @@ done
 declare -A HC_STATUS  # healthy|slow|down
 declare -A HC_MS
 for svc in "${!HEALTH_URLS[@]}"; do
-    if [ -f "$TMPDIR/health_${svc}" ]; then
-        IFS='|' read -r code expected ms < "$TMPDIR/health_${svc}"
+    if [ -f "$DASH_TMPDIR/health_${svc}" ]; then
+        IFS='|' read -r code expected ms < "$DASH_TMPDIR/health_${svc}"
         if [ "$code" = "$expected" ]; then
             if [ "${ms:-0}" -gt 1000 ]; then
                 HC_STATUS[$svc]="slow"
@@ -311,9 +311,9 @@ done
 vpn_connected=false
 vpn_country=""
 vpn_ip=""
-if [ -f "$TMPDIR/vpn" ] && [ -s "$TMPDIR/vpn" ]; then
-    vpn_country=$(python3 -c "import sys,json; d=json.load(open('$TMPDIR/vpn')); print(d.get('country','??'))" 2>/dev/null || true)
-    vpn_ip=$(python3 -c "import sys,json; d=json.load(open('$TMPDIR/vpn')); print(d.get('ip',''))" 2>/dev/null || true)
+if [ -f "$DASH_TMPDIR/vpn" ] && [ -s "$DASH_TMPDIR/vpn" ]; then
+    vpn_country=$(python3 -c "import sys,json; d=json.load(open('$DASH_TMPDIR/vpn')); print(d.get('country','??'))" 2>/dev/null || true)
+    vpn_ip=$(python3 -c "import sys,json; d=json.load(open('$DASH_TMPDIR/vpn')); print(d.get('ip',''))" 2>/dev/null || true)
     [ -n "$vpn_ip" ] && vpn_connected=true
 fi
 
@@ -321,8 +321,8 @@ fi
 disk_pct=0
 disk_free=""
 disk_total=""
-if [ -f "$TMPDIR/disk" ] && [ -s "$TMPDIR/disk" ]; then
-    IFS='|' read -r d_total d_used d_avail d_pct < "$TMPDIR/disk"
+if [ -f "$DASH_TMPDIR/disk" ] && [ -s "$DASH_TMPDIR/disk" ]; then
+    IFS='|' read -r d_total d_used d_avail d_pct < "$DASH_TMPDIR/disk"
     disk_pct="${d_pct%%%}"
     # Convert 1K blocks to human readable
     disk_free=$(awk "BEGIN { gb=${d_avail:-0}/1048576; if(gb>=1024) printf \"%.1fT\",gb/1024; else printf \"%.0fG\",gb }")
@@ -330,30 +330,30 @@ if [ -f "$TMPDIR/disk" ] && [ -s "$TMPDIR/disk" ]; then
 fi
 
 # Library data
-radarr_movies=$(cat "$TMPDIR/radarr_movies" 2>/dev/null || echo "?")
-radarr_queue=$(cat "$TMPDIR/radarr_queue" 2>/dev/null || echo "0")
-radarr_missing=$(cat "$TMPDIR/radarr_missing" 2>/dev/null || echo "0")
-sonarr_series=$(cat "$TMPDIR/sonarr_series" 2>/dev/null || echo "?")
-sonarr_queue=$(cat "$TMPDIR/sonarr_queue" 2>/dev/null || echo "0")
-sonarr_missing=$(cat "$TMPDIR/sonarr_missing" 2>/dev/null || echo "0")
-lidarr_artists=$(cat "$TMPDIR/lidarr_artists" 2>/dev/null || echo "?")
+radarr_movies=$(cat "$DASH_TMPDIR/radarr_movies" 2>/dev/null || echo "?")
+radarr_queue=$(cat "$DASH_TMPDIR/radarr_queue" 2>/dev/null || echo "0")
+radarr_missing=$(cat "$DASH_TMPDIR/radarr_missing" 2>/dev/null || echo "0")
+sonarr_series=$(cat "$DASH_TMPDIR/sonarr_series" 2>/dev/null || echo "?")
+sonarr_queue=$(cat "$DASH_TMPDIR/sonarr_queue" 2>/dev/null || echo "0")
+sonarr_missing=$(cat "$DASH_TMPDIR/sonarr_missing" 2>/dev/null || echo "0")
+lidarr_artists=$(cat "$DASH_TMPDIR/lidarr_artists" 2>/dev/null || echo "?")
 
 # Prowlarr indexers
 prowlarr_enabled="?"
 prowlarr_total="?"
-if [ -f "$TMPDIR/prowlarr_indexers" ] && [ -s "$TMPDIR/prowlarr_indexers" ]; then
-    IFS='|' read -r prowlarr_enabled prowlarr_total < "$TMPDIR/prowlarr_indexers"
+if [ -f "$DASH_TMPDIR/prowlarr_indexers" ] && [ -s "$DASH_TMPDIR/prowlarr_indexers" ]; then
+    IFS='|' read -r prowlarr_enabled prowlarr_total < "$DASH_TMPDIR/prowlarr_indexers"
 fi
 
 # Bazarr badges
 bazarr_ep="0"
 bazarr_mov="0"
-if [ -f "$TMPDIR/bazarr_badges" ] && [ -s "$TMPDIR/bazarr_badges" ]; then
-    IFS='|' read -r bazarr_ep bazarr_mov < "$TMPDIR/bazarr_badges"
+if [ -f "$DASH_TMPDIR/bazarr_badges" ] && [ -s "$DASH_TMPDIR/bazarr_badges" ]; then
+    IFS='|' read -r bazarr_ep bazarr_mov < "$DASH_TMPDIR/bazarr_badges"
 fi
 
 # Jellyfin version
-jellyfin_ver=$(cat "$TMPDIR/jellyfin_ver" 2>/dev/null || echo "?")
+jellyfin_ver=$(cat "$DASH_TMPDIR/jellyfin_ver" 2>/dev/null || echo "?")
 
 # Transmission data
 trans_dl_speed=0
@@ -363,20 +363,20 @@ declare -a TRANS_SEED_NAMES=() TRANS_SEED_RATIO=()
 trans_active_dl=0
 trans_active_seed=0
 
-if [ -f "$TMPDIR/trans_stats" ] && [ -s "$TMPDIR/trans_stats" ]; then
+if [ -f "$DASH_TMPDIR/trans_stats" ] && [ -s "$DASH_TMPDIR/trans_stats" ]; then
     eval "$(python3 -c "
 import sys,json
-d=json.load(open('$TMPDIR/trans_stats'))
+d=json.load(open('$DASH_TMPDIR/trans_stats'))
 a=d.get('arguments',{})
 print(f'trans_dl_speed={a.get(\"downloadSpeed\",0)}')
 print(f'trans_ul_speed={a.get(\"uploadSpeed\",0)}')
 " 2>/dev/null || true)"
 fi
 
-if [ -f "$TMPDIR/trans_torrents" ] && [ -s "$TMPDIR/trans_torrents" ]; then
+if [ -f "$DASH_TMPDIR/trans_torrents" ] && [ -s "$DASH_TMPDIR/trans_torrents" ]; then
     eval "$(python3 -c "
 import sys,json
-d=json.load(open('$TMPDIR/trans_torrents'))
+d=json.load(open('$DASH_TMPDIR/trans_torrents'))
 torrents=d.get('arguments',{}).get('torrents',[])
 dl_count=0
 seed_count=0
@@ -412,10 +412,10 @@ sab_dl_speed=""
 sab_active=0
 declare -a SAB_DL_NAMES=() SAB_DL_PCT=() SAB_DL_LEFT=() SAB_DL_ETA=()
 
-if [ -f "$TMPDIR/sab_queue" ] && [ -s "$TMPDIR/sab_queue" ]; then
+if [ -f "$DASH_TMPDIR/sab_queue" ] && [ -s "$DASH_TMPDIR/sab_queue" ]; then
     eval "$(python3 -c "
 import sys,json
-d=json.load(open('$TMPDIR/sab_queue'))
+d=json.load(open('$DASH_TMPDIR/sab_queue'))
 q=d.get('queue',{})
 speed=q.get('speed','0 B')
 print(f\"sab_dl_speed='{speed}'\")
@@ -440,7 +440,7 @@ fi
 
 # Recent imports
 declare -a RECENT_NAMES=() RECENT_DATES=() RECENT_SOURCES=()
-for histfile in "$TMPDIR/radarr_history" "$TMPDIR/sonarr_history"; do
+for histfile in "$DASH_TMPDIR/radarr_history" "$DASH_TMPDIR/sonarr_history"; do
     if [ -f "$histfile" ] && [ -s "$histfile" ]; then
         while IFS='|' read -r rname rdate rsource; do
             [ -z "$rname" ] && continue

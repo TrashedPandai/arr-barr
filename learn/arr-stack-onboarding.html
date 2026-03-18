@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Arr Stack — How It All Works</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0a0e1a;
+    color: #e0e6f0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── Hero Section ─── */
+  .hero {
+    text-align: center;
+    padding: 80px 20px 40px;
+    background: linear-gradient(180deg, #0f1629 0%, #0a0e1a 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .hero p {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+    position: relative;
+  }
+
+  .hero .subtitle {
+    font-size: 1rem;
+    color: #64748b;
+    margin-top: 12px;
+  }
+
+  /* ─── Section Styles ─── */
+  .section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 24px;
+    text-align: center;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #f1f5f9;
+  }
+
+  .section-desc {
+    color: #94a3b8;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ─── The Big Picture Diagram ─── */
+  .diagram-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .flow-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+  }
+
+  /* ─── Flow Arrow ─── */
+  .flow-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 8px 0;
+  }
+
+  .flow-arrow .line {
+    width: 3px;
+    height: 30px;
+    background: linear-gradient(180deg, #475569, #334155);
+  }
+
+  .flow-arrow .label {
+    font-size: 0.75rem;
+    color: #e2e8f0;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    background: #334155;
+    border-radius: 12px;
+    border: 1px solid #475569;
+  }
+
+  .flow-arrow .triangle {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid #475569;
+  }
+
+  /* ─── Card Layers ─── */
+  .layer {
+    width: 100%;
+    max-width: 900px;
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .layer::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .layer-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .layer-subtitle {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-bottom: 20px;
+  }
+
+  /* Layer: You */
+  .layer-you {
+    background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%);
+    border: 1px solid #312e81;
+    text-align: center;
+    max-width: 400px;
+  }
+  .layer-you::before { background: linear-gradient(90deg, #818cf8, #6366f1); }
+  .layer-you .layer-title { color: #a5b4fc; }
+
+  .user-icon {
+    font-size: 3rem;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 20px rgba(129, 140, 248, 0.4));
+  }
+
+  .user-devices {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .user-devices span {
+    font-size: 0.8rem;
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.15);
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+  }
+
+  /* Layer: Request */
+  .layer-request {
+    background: linear-gradient(135deg, #1a1a2e 0%, #1e293b 100%);
+    border: 1px solid #7c3aed33;
+    text-align: center;
+    max-width: 500px;
+  }
+  .layer-request::before { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+  .layer-request .layer-title { color: #c4b5fd; }
+
+  .request-app {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(124, 58, 237, 0.1);
+    border: 1px solid rgba(124, 58, 237, 0.25);
+    padding: 12px 24px;
+    border-radius: 12px;
+  }
+
+  .request-app .icon { font-size: 1.5rem; }
+  .request-app .name {
+    font-weight: 600;
+    color: #c4b5fd;
+    font-size: 1.1rem;
+  }
+  .request-app .desc {
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+
+  /* Layer: Brains */
+  .layer-brains {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid #0ea5e933;
+  }
+  .layer-brains::before { background: linear-gradient(90deg, #22d3ee, #0ea5e9); }
+  .layer-brains .layer-title { color: #67e8f9; }
+
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .app-card {
+    background: rgba(14, 165, 233, 0.06);
+    border: 1px solid rgba(14, 165, 233, 0.15);
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .app-card:hover {
+    background: rgba(14, 165, 233, 0.12);
+    border-color: rgba(14, 165, 233, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .app-card .icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .app-card .name { font-weight: 600; font-size: 0.9rem; color: #e0f2fe; }
+  .app-card .role { font-size: 0.72rem; color: #7dd3fc; margin-top: 2px; }
+
+  /* Layer: Search */
+  .layer-search {
+    background: linear-gradient(135deg, #1a1a2e 0%, #1e293b 100%);
+    border: 1px solid #f59e0b33;
+    text-align: center;
+    max-width: 600px;
+  }
+  .layer-search::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+  .layer-search .layer-title { color: #fcd34d; }
+
+  .search-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .search-item {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 12px;
+    padding: 14px 20px;
+    text-align: center;
+  }
+
+  .search-item .icon { font-size: 1.5rem; margin-bottom: 4px; }
+  .search-item .name { font-weight: 600; font-size: 0.9rem; color: #fde68a; }
+  .search-item .desc { font-size: 0.72rem; color: #94a3b8; }
+
+  .search-plus {
+    font-size: 1.5rem;
+    color: #475569;
+    font-weight: 300;
+  }
+
+  /* Layer: VPN Tunnel (THE BIG ONE) */
+  .layer-vpn {
+    background: linear-gradient(135deg, #042f1c 0%, #0a1f1a 50%, #0f172a 100%);
+    border: 2px solid #10b981;
+    position: relative;
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.1), inset 0 0 40px rgba(16, 185, 129, 0.03);
+  }
+  .layer-vpn::before { background: linear-gradient(90deg, #34d399, #10b981, #059669); height: 4px; }
+  .layer-vpn .layer-title { color: #6ee7b7; }
+
+  .vpn-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6ee7b7;
+    margin-bottom: 16px;
+  }
+
+  .vpn-badge .dot {
+    width: 8px; height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  }
+
+  .vpn-clients {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .vpn-client {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .vpn-client .icon { font-size: 2rem; margin-bottom: 6px; }
+  .vpn-client .name { font-weight: 600; color: #a7f3d0; font-size: 1rem; }
+  .vpn-client .type { font-size: 0.8rem; color: #6ee7b7; margin-top: 2px; }
+  .vpn-client .detail { font-size: 0.72rem; color: #64748b; margin-top: 6px; line-height: 1.4; }
+
+  .vpn-shield-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .shield-tag {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #6ee7b7;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+
+  /* Layer: Storage */
+  .layer-storage {
+    background: linear-gradient(135deg, #1e1b2e 0%, #1e293b 100%);
+    border: 1px solid #f472b633;
+  }
+  .layer-storage::before { background: linear-gradient(90deg, #fb7185, #f472b6); }
+  .layer-storage .layer-title { color: #fda4af; }
+
+  .storage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+  }
+
+  .storage-folder {
+    background: rgba(244, 114, 182, 0.06);
+    border: 1px solid rgba(244, 114, 182, 0.15);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+
+  .storage-folder .icon { font-size: 1.5rem; margin-bottom: 4px; }
+  .storage-folder .name { font-weight: 600; font-size: 0.85rem; color: #fecdd3; }
+  .storage-folder .path { font-size: 0.65rem; color: #64748b; font-family: monospace; }
+
+  /* Layer: Players */
+  .layer-players {
+    background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%);
+    border: 1px solid #818cf833;
+  }
+  .layer-players::before { background: linear-gradient(90deg, #a78bfa, #818cf8); }
+  .layer-players .layer-title { color: #c4b5fd; }
+
+  .player-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .player-card {
+    background: rgba(129, 140, 248, 0.06);
+    border: 1px solid rgba(129, 140, 248, 0.15);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    position: relative;
+  }
+
+  .player-card .icon { font-size: 1.5rem; margin-bottom: 4px; }
+  .player-card .name { font-weight: 600; font-size: 0.9rem; color: #e0e7ff; }
+  .player-card .alt { font-size: 0.7rem; color: #64748b; margin-top: 4px; font-style: italic; }
+  .player-card .swap-badge {
+    position: absolute;
+    top: 8px; right: 8px;
+    font-size: 0.6rem;
+    background: rgba(129, 140, 248, 0.2);
+    color: #a5b4fc;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  /* ─── Security Callout ─── */
+  .security-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 24px;
+  }
+
+  .security-card {
+    background: linear-gradient(135deg, #042f1c 0%, #0a1f1a 100%);
+    border: 1px solid #10b98144;
+    border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .security-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7);
+  }
+
+  .security-card h2 {
+    font-size: 1.6rem;
+    color: #6ee7b7;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .security-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .sec-feature {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .sec-feature .check {
+    font-size: 1.2rem;
+    color: #10b981;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .sec-feature .text h4 {
+    font-size: 0.9rem;
+    color: #a7f3d0;
+    font-weight: 600;
+  }
+
+  .sec-feature .text p {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin-top: 2px;
+  }
+
+  /* ─── Remote Access Callout ─── */
+  .remote-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 0;
+  }
+
+  .remote-card {
+    background: linear-gradient(135deg, #1a1033 0%, #1e293b 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 16px;
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .remote-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa, #c4b5fd);
+  }
+
+  .remote-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.4));
+  }
+
+  .remote-text h3 {
+    font-size: 1.1rem;
+    color: #c4b5fd;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .remote-text p {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+
+  .remote-text strong {
+    color: #a78bfa;
+  }
+
+  @media (max-width: 768px) {
+    .remote-card { flex-direction: column; text-align: center; }
+  }
+
+  /* ─── Cost Breakdown ─── */
+  .cost-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 24px 40px;
+  }
+
+  .cost-section > h2 {
+    font-size: 1.6rem;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .cost-intro {
+    font-size: 1rem;
+    color: #94a3b8;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 36px;
+    line-height: 1.7;
+  }
+
+  .cost-tiers {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ── Shared tier card ── */
+  .cost-tier {
+    border-radius: 20px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cost-tier::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .tier-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+
+  .tier-header .t-icon { font-size: 1.6rem; flex-shrink: 0; }
+
+  .tier-header .t-name { font-size: 1.2rem; font-weight: 700; }
+
+  .tier-header .t-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .tier-desc {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  /* ── Starting Point tier ── */
+  .tier-start {
+    background: linear-gradient(135deg, #042f1c 0%, #0a1f1a 100%);
+    border: 2px solid rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.08);
+  }
+  .tier-start::before { background: linear-gradient(90deg, #34d399, #10b981); }
+  .tier-start .t-name { color: #6ee7b7; }
+  .tier-start .t-badge { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+  /* VPN callout inside starting point */
+  .vpn-callout {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+  }
+
+  .vpn-callout .vc-icon {
+    font-size: 2.2rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4));
+  }
+
+  .vpn-callout .vc-text .vc-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #a7f3d0;
+  }
+
+  .vpn-callout .vc-text .vc-sub {
+    font-size: 0.78rem;
+    color: #6ee7b7;
+    margin-top: 2px;
+  }
+
+  .vpn-callout .vc-tag {
+    margin-left: auto;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    padding: 4px 10px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  /* Free divider */
+  .free-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .free-divider .fd-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(16, 185, 129, 0.2);
+  }
+
+  .free-divider .fd-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #6ee7b7;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+
+  /* Free pills */
+  .free-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .free-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    color: #a7f3d0;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .free-pill:hover {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  .free-pill .fp-icon { font-size: 0.9rem; }
+  .free-pill .fp-price { color: #6ee7b7; font-weight: 600; font-size: 0.68rem; }
+
+  /* ── Usenet Upgrade tier ── */
+  .tier-usenet {
+    background: linear-gradient(135deg, #1a1a2e 0%, #1e293b 100%);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+  }
+  .tier-usenet::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+  .tier-usenet .t-name { color: #fcd34d; }
+  .tier-usenet .t-badge { background: rgba(245, 158, 11, 0.12); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+  /* Usenet lanes */
+  .usenet-lanes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .usenet-lane {
+    text-align: center;
+  }
+
+  .lane-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #fcd34d;
+    margin-bottom: 12px;
+  }
+
+  .lane-desc {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  /* Chain nodes */
+  .chain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .chain-node {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    width: 100%;
+    max-width: 220px;
+    text-align: center;
+    position: relative;
+  }
+
+  .chain-node .cn-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #fde68a;
+  }
+
+  .chain-node .cn-type {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+
+  .chain-node.primary {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.12);
+  }
+
+  .chain-node.primary .cn-badge {
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    background: #f59e0b;
+    color: #1a1a2e;
+    padding: 2px 8px;
+    border-radius: 8px;
+    text-transform: uppercase;
+  }
+
+  .chain-node.optional {
+    border-style: dashed;
+    opacity: 0.85;
+  }
+
+  .chain-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 0;
+  }
+
+  .chain-connector .cc-line {
+    width: 2px;
+    height: 10px;
+    background: rgba(245, 158, 11, 0.3);
+  }
+
+  .chain-connector .cc-label {
+    font-size: 0.6rem;
+    color: #f59e0b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    background: rgba(245, 158, 11, 0.08);
+    border-radius: 8px;
+  }
+
+  .chain-connector .cc-arrow {
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid rgba(245, 158, 11, 0.3);
+  }
+
+  /* Enough badge */
+  .enough-note {
+    font-size: 0.72rem;
+    color: #fcd34d;
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* Usenet bottom note */
+  .usenet-note {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.12);
+    border-radius: 12px;
+    padding: 14px 18px;
+  }
+
+  .usenet-note .un-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+  .usenet-note p {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+
+  .usenet-note strong { color: #fde68a; }
+
+  /* ─── Getting Started CTA ─── */
+  .getting-started-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 24px 60px;
+  }
+
+  .getting-started-card {
+    background: linear-gradient(135deg, #042f2a 0%, #0a1a1f 100%);
+    border: 1px solid rgba(20, 184, 166, 0.3);
+    border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .getting-started-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #14b8a6, #2dd4bf, #5eead4);
+  }
+
+  .getting-started-card h2 {
+    font-size: 1.6rem;
+    color: #5eead4;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .getting-started-card .gs-subtitle {
+    font-size: 0.92rem;
+    color: #94a3b8;
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .gs-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .gs-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .gs-step-num {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: #042f2a;
+    font-weight: 800;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+
+  .gs-step-content h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #99f6e4;
+    margin-bottom: 4px;
+  }
+
+  .gs-step-content p {
+    font-size: 0.84rem;
+    color: #94a3b8;
+    line-height: 1.65;
+  }
+
+  .gs-step-content code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    background: rgba(20, 184, 166, 0.1);
+    border: 1px solid rgba(20, 184, 166, 0.2);
+    color: #5eead4;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .gs-step-content strong {
+    color: #2dd4bf;
+  }
+
+  /* ─── Footer ─── */
+  .footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: #475569;
+    font-size: 0.8rem;
+    border-top: 1px solid #1e293b;
+  }
+
+  /* ─── Responsive — Tablet ─── */
+  @media (max-width: 768px) {
+    .hero { padding: 50px 16px 30px; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero p { font-size: 1.05rem; }
+
+    .section { padding: 40px 16px; }
+    .section-title { font-size: 1.4rem; }
+    .section-desc { font-size: 0.95rem; }
+
+    .diagram-container { padding: 20px 12px; }
+    .layer { padding: 20px 16px; }
+
+    .vpn-clients { grid-template-columns: 1fr; }
+    .security-features { grid-template-columns: 1fr; }
+    .security-card { padding: 28px 20px; }
+    .security-card h2 { font-size: 1.3rem; }
+
+    .app-grid { grid-template-columns: repeat(2, 1fr); }
+    .player-grid { grid-template-columns: repeat(2, 1fr); }
+    .storage-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .search-row { flex-direction: column; }
+    .search-plus { transform: rotate(90deg); }
+
+    .remote-card { flex-direction: column; text-align: center; padding: 22px 18px; }
+    .remote-text h3 { font-size: 1rem; }
+
+    .cost-section { padding: 40px 16px 30px; }
+    .cost-tier { padding: 22px 18px; }
+
+    .getting-started-section { padding: 16px 16px 40px; }
+    .getting-started-card { padding: 28px 20px; }
+    .getting-started-card h2 { font-size: 1.3rem; }
+
+    .usenet-lanes { grid-template-columns: 1fr; gap: 28px; }
+
+    .vpn-callout { flex-direction: column; text-align: center; gap: 10px; padding: 16px; }
+    .vpn-callout .vc-tag { margin-left: 0; }
+  }
+
+  /* ─── Responsive — Phone ─── */
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 1.8rem; }
+    .hero p { font-size: 0.95rem; }
+    .hero .subtitle { font-size: 0.85rem; }
+
+    .user-devices { flex-wrap: wrap; gap: 8px; }
+    .user-devices span { font-size: 0.72rem; padding: 3px 8px; }
+
+    .section-title { font-size: 1.2rem; }
+    .section-desc { font-size: 0.88rem; }
+
+    .layer { padding: 16px 12px; border-radius: 12px; }
+    .layer-title { font-size: 0.72rem; }
+    .layer-subtitle { font-size: 0.78rem; }
+
+    .app-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .app-card { padding: 12px 8px; }
+    .app-card .icon { font-size: 1.4rem; }
+    .app-card .name { font-size: 0.78rem; }
+
+    .player-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .player-card { padding: 12px 8px; }
+    .player-card .swap-badge { font-size: 0.5rem; padding: 1px 4px; }
+
+    .storage-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .storage-folder { padding: 10px 6px; }
+    .storage-folder .name { font-size: 0.72rem; }
+    .storage-folder .path { font-size: 0.58rem; }
+
+    .vpn-client { padding: 14px 10px; }
+    .vpn-shield-row { gap: 6px; }
+    .shield-tag { font-size: 0.62rem; padding: 3px 7px; }
+
+    .flow-arrow .label { font-size: 0.65rem; padding: 3px 10px; }
+
+    .security-section { padding: 40px 12px; }
+    .security-card { padding: 22px 16px; border-radius: 14px; }
+    .security-card h2 { font-size: 1.15rem; gap: 8px; }
+    .sec-feature .text h4 { font-size: 0.82rem; }
+    .sec-feature .text p { font-size: 0.72rem; }
+
+    .remote-section { padding: 30px 12px 0; }
+    .remote-card { padding: 18px 14px; border-radius: 12px; }
+    .remote-icon { font-size: 2rem; }
+
+    .cost-section { padding: 36px 12px 24px; }
+    .cost-section > h2 { font-size: 1.3rem; }
+    .cost-intro { font-size: 0.88rem; }
+    .cost-tier { padding: 18px 14px; border-radius: 14px; }
+    .tier-header .t-name { font-size: 1rem; }
+    .tier-desc { font-size: 0.82rem; }
+
+    .free-pills { gap: 6px; }
+    .free-pill { padding: 5px 10px; font-size: 0.7rem; }
+
+    .chain-node { padding: 10px 12px; }
+    .chain-node .cn-name { font-size: 0.78rem; }
+
+    .getting-started-section { padding: 12px 12px 36px; }
+    .getting-started-card { padding: 22px 16px; border-radius: 14px; }
+    .getting-started-card h2 { font-size: 1.15rem; gap: 8px; }
+    .getting-started-card .gs-subtitle { font-size: 0.84rem; margin-bottom: 24px; }
+    .gs-step { gap: 12px; }
+    .gs-step-num { width: 28px; height: 28px; font-size: 0.78rem; }
+    .gs-step-content h3 { font-size: 0.88rem; }
+    .gs-step-content p { font-size: 0.78rem; }
+
+    .footer { padding: 30px 16px; font-size: 0.72rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- HERO                                    -->
+<!-- ═══════════════════════════════════════ -->
+<div class="hero">
+  <h1>The Arr Stack</h1>
+  <p>Your personal, automated media server. Movies, TV, music, books, and audiobooks &mdash; found, downloaded, organized, and served. All running on hardware you own.</p>
+  <p class="subtitle">Open-source &bull; Self-hosted &bull; Private &bull; Fully automated</p>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- THE BIG PICTURE — FLOW DIAGRAM          -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section">
+  <h2 class="section-title">The Big Picture</h2>
+  <p class="section-desc">Every piece has a job. Together, they form an automated pipeline that takes you from "I want to watch that movie" to watching it — with zero manual work in between.</p>
+</div>
+
+<div class="diagram-container">
+  <div class="flow-diagram">
+
+    <!-- 1. YOU -->
+    <div class="layer layer-you">
+      <div class="user-icon">&#x1F9D1;&#x200D;&#x1F4BB;</div>
+      <div class="layer-title">You</div>
+      <div class="layer-subtitle">Browse, request, enjoy</div>
+      <div class="user-devices">
+        <span>&#x1F4F1; Phone</span>
+        <span>&#x1F4BB; Laptop</span>
+        <span>&#x1F4FA; TV</span>
+      </div>
+    </div>
+
+    <div class="flow-arrow">
+      <div class="line"></div>
+      <div class="label">"I want to watch Dune 2"</div>
+      <div class="line"></div>
+      <div class="triangle"></div>
+    </div>
+
+    <!-- 2. REQUEST PORTAL -->
+    <div class="layer layer-request">
+      <div class="layer-title">Request Portal</div>
+      <div class="layer-subtitle">A Netflix-like interface for browsing and requesting content</div>
+      <div class="request-app">
+        <div class="icon">&#x1F3AC;</div>
+        <div>
+          <div class="name">Jellyseerr</div>
+          <div class="desc">Browse &bull; Request &bull; Track</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-arrow">
+      <div class="line"></div>
+      <div class="label">Sends request to the right app</div>
+      <div class="line"></div>
+      <div class="triangle"></div>
+    </div>
+
+    <!-- 3. THE BRAINS -->
+    <div class="layer layer-brains">
+      <div class="layer-title">The Brains &mdash; Arr Apps</div>
+      <div class="layer-subtitle">Each app manages one type of media. They know what you have, what you want, and how to get it.</div>
+      <div class="app-grid">
+        <div class="app-card">
+          <div class="icon">&#x1F3AC;</div>
+          <div class="name">Radarr</div>
+          <div class="role">Movies</div>
+        </div>
+        <div class="app-card">
+          <div class="icon">&#x1F4FA;</div>
+          <div class="name">Sonarr</div>
+          <div class="role">TV Shows</div>
+        </div>
+        <div class="app-card">
+          <div class="icon">&#x1F3B5;</div>
+          <div class="name">Lidarr</div>
+          <div class="role">Music</div>
+        </div>
+        <div class="app-card">
+          <div class="icon">&#x1F4DA;</div>
+          <div class="name">LazyLibrarian</div>
+          <div class="role">Books & Audiobooks</div>
+        </div>
+        <div class="app-card">
+          <div class="icon">&#x1F4AC;</div>
+          <div class="name">Bazarr</div>
+          <div class="role">Subtitles</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-arrow">
+      <div class="line"></div>
+      <div class="label">"Search every source for this"</div>
+      <div class="line"></div>
+      <div class="triangle"></div>
+    </div>
+
+    <!-- 4. SEARCH -->
+    <div class="layer layer-search">
+      <div class="layer-title">The Search Engine</div>
+      <div class="layer-subtitle">Searches dozens of indexers to find the best available version</div>
+      <div class="search-row">
+        <div class="search-item">
+          <div class="icon">&#x1F50D;</div>
+          <div class="name">Prowlarr</div>
+          <div class="desc">Manages all indexers</div>
+        </div>
+        <div class="search-plus">+</div>
+        <div class="search-item">
+          <div class="icon">&#x1F6E1;&#xFE0F;</div>
+          <div class="name">FlareSolverr</div>
+          <div class="desc">Bypasses anti-bot walls</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-arrow">
+      <div class="line"></div>
+      <div class="label">Best result found &mdash; download it</div>
+      <div class="line"></div>
+      <div class="triangle"></div>
+    </div>
+
+    <!-- 5. VPN + DOWNLOAD CLIENTS -->
+    <div class="layer layer-vpn">
+      <div class="vpn-badge">
+        <div class="dot"></div>
+        VPN Tunnel Active &mdash; All Traffic Encrypted
+      </div>
+      <div class="layer-title">&#x1F512; The Secure Download Zone</div>
+      <div class="layer-subtitle">Download clients run <strong>inside</strong> an encrypted VPN tunnel. If the VPN drops, downloads stop instantly (kill switch). Your real IP address is never exposed.</div>
+      <div class="vpn-clients">
+        <div class="vpn-client">
+          <div class="icon">&#x26A1;</div>
+          <div class="name">SABnzbd</div>
+          <div class="type">Usenet (Primary)</div>
+          <div class="detail">Direct download from Usenet servers over SSL. Fast, private, no sharing required.</div>
+        </div>
+        <div class="vpn-client">
+          <div class="icon">&#x1F300;</div>
+          <div class="name">Transmission</div>
+          <div class="type">Torrents (Fallback)</div>
+          <div class="detail">Peer-to-peer downloads. Used when Usenet doesn't have the file. Seeds back to the community.</div>
+        </div>
+      </div>
+      <div class="vpn-shield-row">
+        <span class="shield-tag">&#x1F512; WireGuard Encryption</span>
+        <span class="shield-tag">&#x1F6AB; Kill Switch</span>
+        <span class="shield-tag">&#x1F310; VPN Server Location: Netherlands</span>
+        <span class="shield-tag">&#x1F6E1;&#xFE0F; Real IP Hidden</span>
+      </div>
+    </div>
+
+    <div class="flow-arrow">
+      <div class="line"></div>
+      <div class="label">Downloaded &amp; organized automatically</div>
+      <div class="line"></div>
+      <div class="triangle"></div>
+    </div>
+
+    <!-- 6. STORAGE -->
+    <div class="layer layer-storage">
+      <div class="layer-title">Your Media Library</div>
+      <div class="layer-subtitle">Everything is neatly sorted into folders. Files are named properly with artwork and metadata.</div>
+      <div class="storage-grid">
+        <div class="storage-folder">
+          <div class="icon">&#x1F3AC;</div>
+          <div class="name">Movies</div>
+          <div class="path">/media/movies/</div>
+        </div>
+        <div class="storage-folder">
+          <div class="icon">&#x1F4FA;</div>
+          <div class="name">TV Shows</div>
+          <div class="path">/media/tv/</div>
+        </div>
+        <div class="storage-folder">
+          <div class="icon">&#x1F3B5;</div>
+          <div class="name">Music</div>
+          <div class="path">/media/music/</div>
+        </div>
+        <div class="storage-folder">
+          <div class="icon">&#x1F4D6;</div>
+          <div class="name">Books</div>
+          <div class="path">/media/books/</div>
+        </div>
+        <div class="storage-folder">
+          <div class="icon">&#x1F3A7;</div>
+          <div class="name">Audiobooks</div>
+          <div class="path">/media/audiobooks/</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-arrow">
+      <div class="line"></div>
+      <div class="label">Auto-detected by your media apps</div>
+      <div class="line"></div>
+      <div class="triangle"></div>
+    </div>
+
+    <!-- 7. MEDIA PLAYERS -->
+    <div class="layer layer-players">
+      <div class="layer-title">Watch, Listen, Read &mdash; Your Choice</div>
+      <div class="layer-subtitle">These are <strong>swappable</strong>. Use whatever apps you prefer. The arr stack doesn't care &mdash; it just organizes files into folders.</div>
+      <div class="player-grid">
+        <div class="player-card">
+          <div class="swap-badge">SWAPPABLE</div>
+          <div class="icon">&#x1F4FA;</div>
+          <div class="name">Jellyfin</div>
+          <div class="alt">or Plex, Emby</div>
+        </div>
+        <div class="player-card">
+          <div class="swap-badge">SWAPPABLE</div>
+          <div class="icon">&#x1F3B6;</div>
+          <div class="name">Roon</div>
+          <div class="alt">or Navidrome, Plexamp</div>
+        </div>
+        <div class="player-card">
+          <div class="swap-badge">SWAPPABLE</div>
+          <div class="icon">&#x1F4D6;</div>
+          <div class="name">Kavita</div>
+          <div class="alt">or Calibre-Web</div>
+        </div>
+        <div class="player-card">
+          <div class="swap-badge">SWAPPABLE</div>
+          <div class="icon">&#x1F3A7;</div>
+          <div class="name">Audiobookshelf</div>
+          <div class="alt">dedicated audiobook app</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SECURITY CALLOUT                        -->
+<!-- ═══════════════════════════════════════ -->
+<div class="security-section">
+  <div class="security-card">
+    <h2>&#x1F512; Built-in Privacy &amp; Security</h2>
+    <div class="security-features">
+      <div class="sec-feature">
+        <div class="check">&#x2705;</div>
+        <div class="text">
+          <h4>VPN Kill Switch</h4>
+          <p>If the VPN connection drops, all download traffic is instantly blocked. Your real IP can never leak.</p>
+        </div>
+      </div>
+      <div class="sec-feature">
+        <div class="check">&#x2705;</div>
+        <div class="text">
+          <h4>Encrypted Tunnel</h4>
+          <p>WireGuard encryption wraps all download traffic. Your ISP sees encrypted data going to a VPN server &mdash; nothing more.</p>
+        </div>
+      </div>
+      <div class="sec-feature">
+        <div class="check">&#x2705;</div>
+        <div class="text">
+          <h4>Network Isolation</h4>
+          <p>Only the download clients use the VPN. Your other apps connect normally &mdash; no speed penalty for browsing or streaming.</p>
+        </div>
+      </div>
+      <div class="sec-feature">
+        <div class="check">&#x2705;</div>
+        <div class="text">
+          <h4>No Port Forwarding Needed</h4>
+          <p>Everything runs on your local network. No services are exposed to the internet unless you choose to.</p>
+        </div>
+      </div>
+      <div class="sec-feature">
+        <div class="check">&#x2705;</div>
+        <div class="text">
+          <h4>SSL Usenet Downloads</h4>
+          <p>Usenet traffic is encrypted end-to-end via SSL. Even inside the VPN tunnel, the data is double-encrypted.</p>
+        </div>
+      </div>
+      <div class="sec-feature">
+        <div class="check">&#x2705;</div>
+        <div class="text">
+          <h4>No-Log VPN Provider</h4>
+          <p>Providers like ProtonVPN and Mullvad keep zero logs. Even they can't see what you download.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- REMOTE ACCESS                            -->
+<!-- ═══════════════════════════════════════ -->
+<div class="remote-section">
+  <div class="remote-card">
+    <div class="remote-icon">&#x1F30D;</div>
+    <div class="remote-text">
+      <h3>Stream Anywhere &mdash; Not Just at Home</h3>
+      <p>With a <strong>free</strong> service like <strong>Tailscale</strong>, you can stream your media from anywhere &mdash; at work, on vacation, at a friend's house. Just download the app on your phone and on your server, and you're done. All it does is trick your phone into thinking it's still on your home Wi-Fi, so you can keep streaming off your server like you never left. No complicated setup, no subscriptions.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- COST BREAKDOWN                           -->
+<!-- ═══════════════════════════════════════ -->
+<div class="cost-section">
+  <h2>What Does It Actually Cost?</h2>
+  <p class="cost-intro">Every app in the stack is free and open-source. The only costs are the <em>services</em> that connect them to the outside world.</p>
+
+  <div class="cost-tiers">
+
+    <!-- ── STARTING POINT ── -->
+    <div class="cost-tier tier-start">
+      <div class="tier-header">
+        <div class="t-icon">&#x1F512;</div>
+        <div class="t-name">The Starting Point</div>
+        <div class="t-badge">Required</div>
+      </div>
+      <p class="tier-desc">A VPN subscription is the <strong>only thing you have to pay for</strong>. Without it, the download containers won't connect. This alone gives you a fully working stack.</p>
+
+      <div class="vpn-callout">
+        <div class="vc-icon">&#x1F6E1;&#xFE0F;</div>
+        <div class="vc-text">
+          <div class="vc-title">VPN Provider</div>
+          <div class="vc-sub">ProtonVPN, Mullvad, or similar &bull; Monthly or annual subscription &bull; <strong>Must support WireGuard config file export</strong></div>
+        </div>
+        <div class="vc-tag">Paid</div>
+      </div>
+
+      <div class="free-divider">
+        <div class="fd-line"></div>
+        <div class="fd-label">Everything else is free</div>
+        <div class="fd-line"></div>
+      </div>
+
+      <div class="free-pills">
+        <span class="free-pill"><span class="fp-icon">&#x1F3AC;</span> Radarr <span class="fp-price">$0</span></span>
+        <span class="free-pill"><span class="fp-icon">&#x1F4FA;</span> Sonarr <span class="fp-price">$0</span></span>
+        <span class="free-pill"><span class="fp-icon">&#x1F3B5;</span> Lidarr <span class="fp-price">$0</span></span>
+        <span class="free-pill"><span class="fp-icon">&#x1F50D;</span> Prowlarr <span class="fp-price">$0</span></span>
+        <span class="free-pill"><span class="fp-icon">&#x1F4AC;</span> Bazarr <span class="fp-price">$0</span></span>
+        <span class="free-pill"><span class="fp-icon">&#x1F4FA;</span> Jellyfin <span class="fp-price">$0</span></span>
+        <span class="free-pill"><span class="fp-icon">&#x1F4D6;</span> Kavita <span class="fp-price">$0</span></span>
+        <span class="free-pill"><span class="fp-icon">&#x1F3A7;</span> Audiobookshelf <span class="fp-price">$0</span></span>
+        <span class="free-pill"><span class="fp-icon">&#x1F300;</span> Transmission <span class="fp-price">$0</span></span>
+        <span class="free-pill"><span class="fp-icon">&#x1F310;</span> Torrent Indexers <span class="fp-price">$0</span></span>
+      </div>
+    </div>
+
+    <!-- ── USENET UPGRADE ── -->
+    <div class="cost-tier tier-usenet">
+      <div class="tier-header">
+        <div class="t-icon">&#x1F680;</div>
+        <div class="t-name">The Upgrade &mdash; Usenet</div>
+        <div class="t-badge">Optional</div>
+      </div>
+      <p class="tier-desc">Usenet adds a <strong>faster, more reliable lane</strong> alongside torrents. When a file isn't on Usenet, the stack falls back to torrents automatically. One of each is enough &mdash; more just fill in the gaps.</p>
+
+      <div class="usenet-lanes">
+
+        <!-- Providers lane -->
+        <div class="usenet-lane">
+          <div class="lane-label">&#x1F4E1; Providers</div>
+          <div class="lane-desc">The servers you download from</div>
+          <div class="chain">
+            <div class="chain-node primary">
+              <div class="cn-badge">Start here</div>
+              <div class="cn-name">NewHosting</div>
+              <div class="cn-type">Subscription &bull; unlimited downloads</div>
+            </div>
+            <div class="chain-connector">
+              <div class="cc-line"></div>
+              <div class="cc-label">not found?</div>
+              <div class="cc-line"></div>
+              <div class="cc-arrow"></div>
+            </div>
+            <div class="chain-node optional">
+              <div class="cn-name">Frugal Usenet</div>
+              <div class="cn-type">Budget subscription &bull; different backbone</div>
+            </div>
+            <div class="chain-connector">
+              <div class="cc-line"></div>
+              <div class="cc-label">still missing?</div>
+              <div class="cc-line"></div>
+              <div class="cc-arrow"></div>
+            </div>
+            <div class="chain-node optional">
+              <div class="cn-name">BlockNews</div>
+              <div class="cn-type">One-time data block &bull; pay once, never expires</div>
+            </div>
+          </div>
+          <div class="enough-note">&#x2714; One provider is plenty to start</div>
+        </div>
+
+        <!-- Indexers lane -->
+        <div class="usenet-lane">
+          <div class="lane-label">&#x1F50D; Indexers</div>
+          <div class="lane-desc">Search engines that find files on Usenet</div>
+          <div class="chain">
+            <div class="chain-node primary">
+              <div class="cn-badge">Start here</div>
+              <div class="cn-name">NZBFinder</div>
+              <div class="cn-type">Free tier or paid &bull; limited daily searches</div>
+            </div>
+            <div class="chain-connector">
+              <div class="cc-line"></div>
+              <div class="cc-label">can't find it?</div>
+              <div class="cc-line"></div>
+              <div class="cc-arrow"></div>
+            </div>
+            <div class="chain-node optional">
+              <div class="cn-name">NZBgeek</div>
+              <div class="cn-type">Paid &bull; different catalog, better coverage</div>
+            </div>
+          </div>
+          <div class="enough-note">&#x2714; One indexer works fine</div>
+        </div>
+
+      </div>
+
+      <div class="usenet-note">
+        <div class="un-icon">&#x26A1;</div>
+        <p><strong>SABnzbd</strong> (the Usenet download client) is free. The only costs are the provider and indexer subscriptions, and even those can start with just one of each.</p>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- GETTING STARTED CTA                     -->
+<!-- ═══════════════════════════════════════ -->
+<div class="getting-started-section">
+  <div class="getting-started-card">
+    <h2>&#x1F680; Ready to Set It Up?</h2>
+    <p class="gs-subtitle">Everything you need is included. Here's the game plan at a high level &mdash; the detailed guide walks you through each step.</p>
+
+    <div class="gs-steps">
+      <div class="gs-step">
+        <div class="gs-step-num">1</div>
+        <div class="gs-step-content">
+          <h3>Read the guide</h3>
+          <p>The included <strong>arr-stack-guide.md</strong> is the full walkthrough. Open it in something that renders Markdown nicely (VS Code, Obsidian, a browser extension) so it's easy to follow. Even better &mdash; feed the guide, compose file, and <strong>.env</strong> file to an <strong>agentic AI coding assistant</strong> like <strong>Claude Code</strong>, <strong>Cursor</strong>, or <strong>Windsurf</strong>. These tools can read the guide, edit config files, run commands, and automate most of the setup for you &mdash; turning hours of manual work into a guided, semi-automated process.</p>
+        </div>
+      </div>
+
+      <div class="gs-step">
+        <div class="gs-step-num">2</div>
+        <div class="gs-step-content">
+          <h3>Run the compose file</h3>
+          <p>The included <strong>compose.yaml</strong> is ready to go. A single <code>docker compose up -d</code> spins up the entire automation stack.</p>
+        </div>
+      </div>
+
+      <div class="gs-step">
+        <div class="gs-step-num">3</div>
+        <div class="gs-step-content">
+          <h3>Pay for the services you want</h3>
+          <p>Some services require subscriptions &mdash; a VPN at minimum, and optionally a Usenet provider and indexer. Sign up for whichever ones make sense for you, then plug the credentials into the relevant apps.</p>
+        </div>
+      </div>
+
+      <div class="gs-step">
+        <div class="gs-step-num">4</div>
+        <div class="gs-step-content">
+          <h3>Connect everything with API keys</h3>
+          <p>The arr apps need to talk to each other. The guide covers this in detail, but the gist is: generate an API key in each app's settings and paste it where the other apps ask for it.</p>
+        </div>
+      </div>
+
+      <div class="gs-step">
+        <div class="gs-step-num">5</div>
+        <div class="gs-step-content">
+          <h3>Set up your media player apps</h3>
+          <p>The compose file handles the automation pipeline, but it doesn't include the apps you actually watch, listen, and read with &mdash; things like Jellyfin, Kavita, Audiobookshelf, or a music player. You'll set those up separately and point them at the media folders the stack organizes. The diagram above shows some popular choices.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Put together by a friend who went down this rabbit hole so you don't have to figure it all out alone.
+</div>
+
+</body>
+</html>

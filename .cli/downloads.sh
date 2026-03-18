@@ -8,8 +8,6 @@ require_env
 require_curl
 require_jq || exit 1
 
-source "$CLI_DIR/branding.sh"
-
 DATA_ROOT="$(get_data_root)"
 
 # ── Parse flags ──────────────────────────────────────────────────────────────

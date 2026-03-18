@@ -108,6 +108,7 @@ show_help() {
     echo -e "  ${local_peach}${local_bold}Monitoring${local_reset}"
     echo -e "  ${local_surface}|${local_reset}"
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "health" "Quick API health check (fast!)"
+    printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "dashboard" "Live monitoring dashboard"
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "downloads" "Live download dashboard"
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "vpn" "Check VPN tunnel status"
     printf "  ${local_surface}├─${local_reset} ${local_text}%-14s${local_reset} ${local_overlay}%s${local_reset}\n" "logs <svc>" "View service logs"
@@ -132,7 +133,7 @@ show_help() {
     printf "  ${local_surface}└─${local_reset} ${local_overlay}%-42s${local_reset}\n" "gluetun (vpn), flaresolverr (anti-bot)"
     echo ""
 
-    echo -e "  ${local_dim}Aliases: st=status, up=update, doc=doctor, dl=downloads, log=logs, bk=backup, hp=health${local_reset}"
+    echo -e "  ${local_dim}Aliases: st=status, up=update, doc=doctor, dl=downloads, db=dashboard, log=logs, bk=backup, hp=health, req=request${local_reset}"
     echo -e "  ${local_dim}Stack location: $ARR_HOME${local_reset}"
     echo ""
 }
@@ -181,6 +182,10 @@ case "${1:-}" in
     backup|bk)
         shift
         bash "$CLI_DIR/backup.sh" "$@"
+        ;;
+    dashboard|db)
+        shift
+        bash "$CLI_DIR/dashboard.sh" "$@"
         ;;
     start)
         shift
